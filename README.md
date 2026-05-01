@@ -1,7 +1,8 @@
-# smart-pos-system
 # 🧾 Smart POS System
 
 A complete **Point of Sale (POS)** and inventory management system for stores and businesses.
+
+---
 
 ## 🚀 Features
 - Product management (Add / Edit / Delete)
@@ -10,24 +11,26 @@ A complete **Point of Sale (POS)** and inventory management system for stores an
 - User roles (Admin / Cashier)
 - Dashboard analytics
 
+---
+
 ## 📸 Screenshots
-
-
 
 ### POS Screen
 ![POS](images/pos.png)
 
 ### Reports
-![Reports](images/Reports.png)
+![Reports](images/reports.png)
 
 ### Invoices
 ![Invoices](images/invoices.png)
 
-### SalesRecord
-![SalesRecord](images/SalesRecord.png)
+### Sales Record
+![Sales Record](images/salesrecord.png)
 
-### ShoppingCart
-![ShoppingCart](images/ShoppingCart.png)
+### Shopping Cart
+![Shopping Cart](images/shoppingcart.png)
+
+---
 
 ## 🛠 Tech Stack
 - Node.js
@@ -36,11 +39,10 @@ A complete **Point of Sale (POS)** and inventory management system for stores an
 - SQL / Database
 - REST API
 
+---
+
 ## ⚙️ How to Run
 
 ```bash
 npm install
 node index.js
-
-## 👨‍💻 Developer
-Full Stack Developer: eltahir
