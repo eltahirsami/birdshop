@@ -25,10 +25,10 @@ A complete **Point of Sale (POS)** and inventory management system for stores an
 ![Invoices](images/invoices.png)
 
 ### Sales Record
-![Sales Record](images/salesrecord.png)
+![Sales Record](images/sales-record.png)
 
 ### Shopping Cart
-![Shopping Cart](images/shoppingcart.png)
+![Shopping Cart](images/shopping-cart.png)
 
 ---
 
