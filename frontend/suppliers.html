@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حسابات الموردين</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 14px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .panel { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.04); }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .row input, .row select { padding: 8px; border: 1px solid #ddd; border-radius: 8px; font-family: tahoma; }
+    .row button { padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-family: tahoma; }
+    .btnPrimary { background:#2980b9; color:#fff; }
+    .btnGreen { background:#27ae60; color:#fff; }
+    .btnGray { background:#7f8c8d; color:#fff; }
+    .btnRed { background:#c0392b; color:#fff; }
+    .stats { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .stat { flex:1; min-width: 180px; background:#f8f9fb; border: 1px dashed #ddd; border-radius: 10px; padding: 10px; }
+    .stat h4 { margin: 0 0 6px; font-size: 13px; color:#333; }
+    .stat .val { font-size: 18px; font-weight: bold; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { border: 1px solid #eee; padding: 8px; font-size: 13px; text-align:center; }
+    th { background:#f3f4f7; }
+    .muted { color:#777; font-size: 12px; }
+    .msg { margin-top: 8px; font-weight: bold; }
+  </style>
+</head>
+<script src="xlsx.full.min.js"></script>
+<body style="background:#f6f7fb">
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between;">
+      <h2 style="margin:8px 0;">حسابات الموردين</h2>
+      <div class="row">
+        <button class="btnGray" type="button" onclick="refreshAll()">تحديث</button>
+        <button class="btnPrimary" type="button" onclick="exportSuppliersReport()">تصدير التقرير</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <h3 style="margin:0 0 10px;">الموردين</h3>
+        <div class="row">
+          <select id="supplierSelect" onchange="onSupplierChange()"></select>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <h4>إجمالي المشتريات</h4>
+            <div class="val" id="sumPurchases">0</div>
+          </div>
+          <div class="stat">
+            <h4>إجمالي المدفوع</h4>
+            <div class="val" id="sumPaid">0</div>
+          </div>
+          <div class="stat">
+            <h4>المتبقي</h4>
+            <div class="val" id="sumRemaining">0</div>
+          </div>
+        </div>
+        <hr>
+        <h4 style="margin:0 0 10px;">إضافة مورد</h4>
+        <div class="row">
+          <input id="newSupplierName" placeholder="اسم المورد" />
+          <input id="newSupplierPhone" placeholder="رقم الهاتف (اختياري)" />
+          <input id="newSupplierAddress" placeholder="العنوان (اختياري)" style="min-width:220px;" />
+          <button class="btnGreen" type="button" onclick="createSupplier()">إضافة</button>
+        </div>
+        <div id="supplierMsg" class="msg"></div>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin:0 0 10px;">إضافة فاتورة مورد (تزيد المخزون)</h3>
+        <div class="row">
+          <select id="purchaseSupplierSelect" onchange="onPurchaseSupplierChange()" style="min-width:260px;"></select>
+          <input id="purchaseInvoiceNo" placeholder="رقم الفاتورة (اختياري)" />
+          <input id="purchaseInvoiceDate" placeholder="تاريخ الفاتورة (اختياري)" />
+          <input id="purchaseNotes" placeholder="ملاحظات (اختياري)" style="min-width:220px;" />
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <select id="productSelect"></select>
+          <input id="itemQty" type="number" placeholder="الكمية" style="width:120px;" />
+          <input id="itemUnitCost" type="number" placeholder="سعر الشراء للوحدة" style="width:170px;" />
+          <button class="btnPrimary" type="button" onclick="addItemToDraft()">إضافة بند</button>
+          <button class="btnRed" type="button" onclick="clearDraft()">مسح البنود</button>
+        </div>
+        <div class="muted" style="margin-top:6px;">ملاحظة: سيتم زيادة المخزون تلقائياً عند حفظ الفاتورة.</div>
+        <div style="margin-top:10px; max-height: 180px; overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>المنتج</th>
+                <th>الكمية</th>
+                <th>سعر الوحدة</th>
+                <th>الإجمالي</th>
+                <th>إزالة</th>
+              </tr>
+            </thead>
+            <tbody id="draftItemsBody"></tbody>
+          </table>
+        </div>
+        <div class="row" style="margin-top:10px; justify-content:space-between;">
+          <div><b>إجمالي الفاتورة:</b> <span id="draftTotal">0</span></div>
+          <div class="row" style="justify-content:flex-end;">
+            <button class="btnGray" type="button" onclick="printDraftPurchase()">طباعة الفاتورة</button>
+            <button class="btnGreen" type="button" onclick="savePurchase()">حفظ الفاتورة</button>
+          </div>
+        </div>
+        <div id="purchaseMsg" class="msg"></div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:12px;">
+      <div class="panel">
+        <div class="row" style="justify-content:space-between;margin:0 0 10px;">
+          <h3 style="margin:0;">فواتير المورد</h3>
+          <div class="row">
+            <input id="allPurchasesSearch" placeholder="بحث (اسم المورد أو رقم الفاتورة)" style="min-width:240px;" onkeyup="searchAllPurchases()" />
+            <button class="btnPrimary" type="button" onclick="loadAllPurchases()">عرض الكل</button>
+          </div>
+        </div>
+        <div style="max-height: 320px; overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>المورد</th>
+                <th>رقم</th>
+                <th>تاريخ</th>
+                <th>الإجمالي</th>
+                <th>عرض</th>
+              </tr>
+            </thead>
+            <tbody id="purchasesBody"></tbody>
+          </table>
+        </div>
+        <div class="row" style="justify-content:space-between;margin-top:10px;">
+          <div class="muted" id="allPurchasesPageInfo"></div>
+          <div class="row">
+            <button class="btnGray" type="button" onclick="prevAllPurchasesPage()">السابق</button>
+            <button class="btnGray" type="button" onclick="nextAllPurchasesPage()">التالي</button>
+          </div>
+        </div>
+        <div id="purchasesMsg" class="msg"></div>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin:0 0 10px;">دفعة للمورد</h3>
+        <div class="row">
+          <select id="payPurchaseSelect" style="min-width:260px;"></select>
+          <input id="payRemaining" type="text" placeholder="المتبقي" style="width:160px;background:#f3f4f7" readonly />
+          <input id="payAmount" type="number" placeholder="المبلغ" style="width:160px;" />
+          <input id="payMethod" placeholder="طريقة الدفع (اختياري)" style="width:200px;" />
+          <input id="payNotes" placeholder="ملاحظات (اختياري)" style="min-width:220px;" />
+          <button class="btnGreen" type="button" onclick="createPayment()">تسجيل دفعة</button>
+        </div>
+        <div class="muted" style="margin-top:6px;">اختر الفاتورة التي تريد إضافة الدفعة عليها، أو اختر (على الحساب) إذا لم تكن الدفعة مرتبطة بفاتورة محددة.</div>
+        <div id="paymentMsg" class="msg"></div>
+
+        <hr>
+        <h4 style="margin:0 0 8px;">دفعات المورد</h4>
+        <div style="margin-top:8px; max-height: 160px; overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>المورد</th>
+                <th>الفاتورة</th>
+                <th>المبلغ</th>
+                <th>التاريخ</th>
+              </tr>
+            </thead>
+            <tbody id="paymentsBody"></tbody>
+          </table>
+        </div>
+
+        <hr>
+        <h4 style="margin:0 0 8px;">تفاصيل فاتورة</h4>
+        <div class="muted" id="purchaseDetailsTitle">اختر فاتورة واضغط عرض</div>
+        <div style="margin-top:8px; max-height: 240px; overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>المنتج</th>
+                <th>الكمية</th>
+                <th>سعر الوحدة</th>
+                <th>الإجمالي</th>
+              </tr>
+            </thead>
+            <tbody id="purchaseDetailsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="suppliers.js?v=1"></script>
+</body>
+</html>

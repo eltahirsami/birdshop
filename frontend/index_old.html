@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>BirdShop POS</title>
+<style>
+body {
+  font-family: Arial;
+  background: #f5f5f5;
+  text-align: center;
+}
+
+.container {
+  width: 600px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  margin-top: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #ccc;
+}
+
+input {
+  width: 80%;
+  padding: 10px;
+  font-size: 18px;
+}
+
+button {
+  padding: 10px 15px;
+  font-size: 16px;
+  margin: 5px;
+}
+
+table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.total {
+  font-size: 20px;
+  margin-top: 20px;
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>🐦 BirdShop POS</h2>
+
+  <input type="text" id="barcode" placeholder="امسح الباركود هنا..." autofocus />
+  <button onclick="addProduct()">إضافة</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>المنتج</th>
+        <th>الكمية</th>
+        <th>السعر</th>
+      </tr>
+    </thead>
+    <tbody id="cart"></tbody>
+  </table>
+
+  <div class="total">
+    الإجمالي: <span id="total">0</span> ريال
+  </div>
+
+  <button onclick="clearCart()">تفريغ السلة</button>
+</div>
+
+<script>
+let cart = [];
+let total = 0;
+
+async function addProduct() {
+  const barcodeInput = document.getElementById("barcode");
+  const barcode = barcodeInput.value;
+
+  if (!barcode) return;
+
+  const response = await fetch("http://localhost:3000/products");
+  const products = await response.json();
+
+  const product = products.find(p => p.barcode === barcode);
+
+  if (!product) {
+    alert("المنتج غير موجود");
+    barcodeInput.value = "";
+    return;
+  }
+
+  cart.push(product);
+  total += product.price;
+
+  renderCart();
+  barcodeInput.value = "";
+}
+
+function renderCart() {
+  const cartTable = document.getElementById("cart");
+  cartTable.innerHTML = "";
+
+  cart.forEach(item => {
+    cartTable.innerHTML += `
+      <tr>
+        <td>${item.name}</td>
+        <td>1</td>
+        <td>${item.price}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("total").innerText = total;
+}
+
+function clearCart() {
+  cart = [];
+  total = 0;
+  renderCart();
+}
+</script>
+
+</body>
+</html>

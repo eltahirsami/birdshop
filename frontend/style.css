@@ -1,0 +1,532 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+
+/* =========================
+   المتغيرات — ثيم الأدمن (ذهبي دافئ)
+========================= */
+:root {
+  --bg: #f5f0e8;
+  --surface: #ffffff;
+  --surface2: #faf7f2;
+  --border: #e0d5c5;
+  --text: #2d2820;
+  --text-dim: #7a6e5f;
+  --arabic: 'Tajawal', sans-serif;
+
+  --accent: #b8860b;
+  --accent2: #d4a017;
+  --accent-light: #fdf3d7;
+  --accent-border: #e8c84a;
+  --danger: #c0392b;
+  --warning: #e67e22;
+  --success: #27ae60;
+}
+
+/* ثيم الكاشير — أخضر زيتوني هادئ */
+body.cashier-theme {
+  --bg: #f0f4ee;
+  --surface: #ffffff;
+  --surface2: #f5f8f3;
+  --border: #ccd9c5;
+  --text: #1e2d1a;
+  --text-dim: #5a7050;
+
+  --accent: #3a7d44;
+  --accent2: #2d6b38;
+  --accent-light: #e8f5e9;
+  --accent-border: #81c784;
+  --danger: #c0392b;
+  --warning: #e67e22;
+  --success: #27ae60;
+}
+
+/* =========================
+   الأساس
+========================= */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--arabic);
+  min-height: 100vh;
+  direction: rtl;
+}
+
+/* =========================
+   الشريط العلوي
+========================= */
+#topBar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 2px solid var(--accent-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+#topBar img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  display: block;
+}
+
+#topBar button {
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
+  background: rgba(192, 57, 43, 0.1) !important;
+  color: var(--danger) !important;
+  border: 1px solid rgba(192, 57, 43, 0.3) !important;
+  padding: 6px 14px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-family: var(--arabic) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  transition: all 0.2s !important;
+  z-index: 10 !important;
+}
+
+#topBar button {
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
+  background: #c0392b !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-family: var(--arabic) !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+  z-index: 10 !important;
+}
+
+#topBar button:hover {
+  background: #a93226 !important;
+}
+
+/* =========================
+   العنوان الرئيسي
+========================= */
+h1 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 900;
+  color: #1a1208;
+  padding: 14px 20px 6px;
+  letter-spacing: 0.5px;
+}
+
+/* =========================
+   الإحصائيات
+========================= */
+#stats {
+  display: flex;
+  gap: 12px;
+  margin: 14px 20px;
+  flex-wrap: wrap;
+}
+
+#stats .card {
+  flex: 1;
+  min-width: 130px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-right: 4px solid var(--accent);
+  border-radius: 10px;
+  padding: 14px 16px;
+  text-align: center;
+  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+#stats .card:hover {
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+
+#stats .card h3 {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+#stats .card p {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--accent);
+}
+
+/* =========================
+   زر النسخ الاحتياطي
+========================= */
+div[style*="margin:10px"] {
+  margin: 10px 20px !important;
+}
+
+/* =========================
+   قسم الأدمن
+========================= */
+#adminSection {
+  padding: 0 20px 20px;
+}
+
+/* عناوين الأقسام */
+#adminSection h3 {
+  font-size: 15px;
+  font-weight: 900;
+  color: #1a1208;
+  margin: 18px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--accent-border);
+}
+
+/* =========================
+   الـ inputs
+========================= */
+input[type="text"],
+input[type="number"],
+input[type="password"],
+select {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 7px !important;
+  color: var(--text) !important;
+  padding: 8px 12px !important;
+  font-family: var(--arabic) !important;
+  font-size: 14px !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+  outline: none !important;
+  margin: 3px !important;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.12) !important;
+}
+
+body.cashier-theme input:focus,
+body.cashier-theme select:focus {
+  box-shadow: 0 0 0 3px rgba(58, 125, 68, 0.12) !important;
+}
+
+/* =========================
+   الأزرار العامة
+========================= */
+button {
+  font-family: var(--arabic) !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  border-radius: 7px !important;
+  font-weight: 600 !important;
+}
+
+/* زر حفظ المنتج */
+button[onclick="addProduct()"] {
+  background: var(--accent) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 9px 20px !important;
+  font-size: 14px !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+  margin: 4px !important;
+}
+
+button[onclick="addProduct()"]:hover {
+  background: var(--accent2) !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2) !important;
+}
+
+/* زر البيع */
+button[onclick^="sellProduct"] {
+  background: var(--accent-light) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent-border) !important;
+  padding: 5px 14px !important;
+  font-size: 13px !important;
+}
+
+button[onclick^="sellProduct"]:hover {
+  background: var(--accent) !important;
+  color: #fff !important;
+}
+
+/* زر تعديل */
+button[onclick^="editProduct"] {
+  background: #fff8e1 !important;
+  color: var(--warning) !important;
+  border: 1px solid #f9ca6b !important;
+  padding: 5px 12px !important;
+  font-size: 12px !important;
+}
+
+/* زر حذف */
+button[onclick^="deleteProduct"] {
+  background: #fdecea !important;
+  color: var(--danger) !important;
+  border: 1px solid #f5a49e !important;
+  padding: 5px 12px !important;
+  font-size: 12px !important;
+}
+
+/* أزرار تحديث */
+button[onclick^="load"],
+button[onclick^="check"] {
+  background: var(--surface2) !important;
+  color: var(--text-dim) !important;
+  border: 1px solid var(--border) !important;
+  padding: 7px 14px !important;
+  font-size: 13px !important;
+  margin: 4px 0 !important;
+}
+
+button[onclick^="load"]:hover,
+button[onclick^="check"]:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: var(--accent-light) !important;
+}
+
+/* أزرار التقارير */
+button[onclick^="export"],
+button[onclick^="send"] {
+  background: var(--surface) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent-border) !important;
+  padding: 8px 16px !important;
+  font-size: 13px !important;
+  margin: 4px !important;
+}
+
+button[onclick^="export"]:hover,
+button[onclick^="send"]:hover {
+  background: var(--accent-light) !important;
+}
+
+/* زر مسح السجلات */
+button[onclick="clearSalesHistory()"] {
+  background: #fdecea !important;
+  color: var(--danger) !important;
+  border: 1px solid #f5a49e !important;
+  padding: 7px 14px !important;
+}
+
+/* زر النسخ الاحتياطي */
+button[onclick="manualBackup()"] {
+  background: var(--success) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 8px 18px !important;
+  font-size: 13px !important;
+  box-shadow: 0 2px 6px rgba(39,174,96,0.2) !important;
+}
+
+/* =========================
+   الجداول
+========================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: var(--surface);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+thead tr {
+  background: var(--surface2);
+}
+
+th {
+  padding: 10px 14px;
+  text-align: right;
+  color: var(--text-dim);
+  font-size: 12px;
+  border-bottom: 2px solid var(--border);
+  font-weight: 700;
+}
+
+td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background: var(--accent-light);
+}
+
+/* =========================
+   قسم الكاشير
+========================= */
+#cashierSection {
+  margin: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--accent);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+#cashierSection h3 {
+  font-size: 15px;
+  font-weight: 900;
+  color: #1a1208;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+body.cashier-theme h1,
+body.cashier-theme #adminSection h3,
+body.cashier-theme #cashierSection h3 {
+  color: #0d1f0a;
+}
+
+#total {
+  color: var(--accent);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+/* أزرار السلة */
+button[onclick^="decreaseQty"],
+button[onclick^="increaseQty"] {
+  background: var(--surface2) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--border) !important;
+  padding: 3px 10px !important;
+  font-size: 14px !important;
+}
+
+button[onclick^="removeFromCart"] {
+  background: transparent !important;
+  border: none !important;
+  font-size: 14px !important;
+  padding: 3px 6px !important;
+}
+
+/* زر إتمام البيع */
+button[onclick="checkout()"] {
+  background: var(--success) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 24px !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  box-shadow: 0 3px 10px rgba(39,174,96,0.25) !important;
+}
+
+button[onclick="checkout()"]:hover {
+  background: #219a52 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* زر طباعة */
+button[onclick^="printInvoice"] {
+  background: var(--surface2) !important;
+  color: var(--text-dim) !important;
+  border: 1px solid var(--border) !important;
+  padding: 9px 18px !important;
+  font-size: 14px !important;
+}
+
+/* زر بحث */
+button[onclick="searchInvoice()"] {
+  background: var(--accent-light) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent-border) !important;
+  padding: 8px 16px !important;
+}
+
+/* =========================
+   رسالة النموذج
+========================= */
+#formMessage {
+  color: var(--success);
+  font-size: 13px;
+  margin: 6px 4px;
+}
+
+/* =========================
+   معلومات الفاتورة
+========================= */
+#cashierSection p {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin: 5px 0;
+}
+
+#cashierSection p span {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* =========================
+   نتيجة البحث
+========================= */
+#invoiceResult {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+/* =========================
+   hr
+========================= */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 14px 0;
+}
+
+/* =========================
+   scrollbar
+========================= */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* =========================
+   Animations
+========================= */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#stats .card { animation: fadeIn 0.3s ease both; }
+#stats .card:nth-child(1) { animation-delay: 0.05s; }
+#stats .card:nth-child(2) { animation-delay: 0.1s; }
+#stats .card:nth-child(3) { animation-delay: 0.15s; }
+#stats .card:nth-child(4) { animation-delay: 0.2s; }
+#stats .card:nth-child(5) { animation-delay: 0.25s; }
+
+/* =========================
+   Responsive
+========================= */
+@media (max-width: 768px) {
+  #stats { gap: 8px; margin: 10px 12px; }
+  #stats .card { min-width: 120px; padding: 10px 12px; }
+  #adminSection { padding: 0 12px 12px; }
+  #cashierSection { margin: 10px 12px; padding: 14px; }
+}

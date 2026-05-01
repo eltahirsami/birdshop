@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تفعيل البرنامج - Sky Bird</title>
+<style>
+  body { background:#0a0e1a; color:#e2e8f0; font-family:Tahoma; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
+  .box { background:#111827; border:1px solid #1e3a5f; border-radius:16px; padding:40px; width:400px; text-align:center; }
+  h1 { color:#00d4ff; font-size:22px; margin-bottom:8px; }
+  .machine-id { background:#0a0e1a; border:1px solid #1e3a5f; border-radius:8px; padding:12px; font-family:monospace; color:#00ff88; font-size:16px; letter-spacing:2px; margin:20px 0; }
+  input { width:100%; padding:12px; background:#0a0e1a; border:1px solid #1e3a5f; border-radius:8px; color:#e2e8f0; font-size:15px; text-align:center; letter-spacing:2px; box-sizing:border-box; margin-bottom:12px; outline:none; }
+  input:focus { border-color:#00d4ff; }
+  button { width:100%; padding:12px; background:linear-gradient(135deg,#0099cc,#00d4ff); color:#000; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer; font-family:Tahoma; }
+  .msg { margin-top:12px; font-size:13px; padding:10px; border-radius:6px; display:none; }
+  .msg.success { background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.3); color:#00ff88; display:block; }
+  .msg.error { background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.3); color:#ff4757; display:block; }
+  p { color:#64748b; font-size:13px; margin-bottom:16px; }
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>🦜 SKY BIRD</h1>
+  <p>البرنامج غير مفعّل — أرسل رقم الجهاز للمبرمج للحصول على كود التفعيل</p>
+
+  <div class="machine-id" id="machineId">جاري التحميل...</div>
+
+  <button onclick="copyId()" style="background:#1a2235;color:#00d4ff;border:1px solid #1e3a5f;margin-bottom:16px;">📋 نسخ رقم الجهاز</button>
+
+  <input id="licenseKey" placeholder="XXXXXX-XXXXXX-XXXXXX-XXXXXX" maxlength="27">
+  <button onclick="activate()">✅ تفعيل البرنامج</button>
+
+  <div class="msg" id="msg"></div>
+</div>
+
+<script>
+async function loadMachineId() {
+  const res = await fetch('/license/status')
+  const data = await res.json()
+  document.getElementById('machineId').innerText = data.machineId
+  if (data.licensed) {
+    location.href = '/'
+  }
+}
+
+function copyId() {
+  const id = document.getElementById('machineId').innerText
+  navigator.clipboard.writeText(id)
+  alert('تم النسخ: ' + id)
+}
+
+async function activate() {
+  const key = document.getElementById('licenseKey').value
+  const msg = document.getElementById('msg')
+
+  if (!key) { msg.className = 'msg error'; msg.innerText = 'أدخل كود التفعيل'; return }
+
+  const res = await fetch('/license/activate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key })
+  })
+  const data = await res.json()
+
+  if (data.success) {
+    msg.className = 'msg success'
+    msg.innerText = '✅ تم التفعيل بنجاح — جاري الانتقال...'
+    setTimeout(() => location.href = '/login.html', 2000)
+  } else {
+    msg.className = 'msg error'
+    msg.innerText = '❌ كود غير صحيح — تأكد من الكود وحاول مجدداً'
+  }
+}
+
+loadMachineId()
+</script>
+</body>
+</html>
