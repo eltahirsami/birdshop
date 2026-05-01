@@ -46,3 +46,10 @@ A complete **Point of Sale (POS)** and inventory management system for stores an
 ```bash
 npm install
 node index.js
+
+## 👨‍💻 Developer
+
+- Name: Eltahir  
+- Role: Full Stack Developer  
+- Specialization: Node.js / React / POS Systems  
+- GitHub: https://github.com/eltahirsami
