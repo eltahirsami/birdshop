@@ -16,9 +16,9 @@ password:password
 
 const data = await res.json()
 
-if(data.error){
+if(!res.ok || data.error || data.success === false){
 
-document.getElementById("msg").innerText = data.error
+document.getElementById("msg").innerText = data.error || data.message || "Invalid login"
 return
 
 }

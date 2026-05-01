@@ -38,14 +38,13 @@ function login() {
       password: password.value
     })
   })
-  .then(r => r.json())
-  .then(d => {
-    if (d.error) {
-      msg.innerText = d.error;
-    } else {
-      // 👇 هنا التصحيح
-      location.href = '/';
+  .then(async (r) => ({ ok: r.ok, data: await r.json() }))
+  .then(({ ok, data }) => {
+    if (!ok || data.error || data.success === false) {
+      msg.innerText = data.error || data.message || 'Invalid login';
+      return;
     }
+    location.href = '/';
   });
 }
 </script>

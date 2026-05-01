@@ -51,11 +51,28 @@ db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      role TEXT NOT NULL
+      name TEXT,
+      email TEXT UNIQUE,
+      username TEXT UNIQUE,
+      password TEXT,
+      role TEXT DEFAULT 'cashier'
     )
   `);
+
+  // Safe migration for existing installations that still have the old users schema.
+  db.all("PRAGMA table_info(users)", [], (err, columns) => {
+    if (err || !Array.isArray(columns)) return;
+    const colNames = new Set(columns.map((c) => c.name));
+    if (!colNames.has('name')) {
+      db.run("ALTER TABLE users ADD COLUMN name TEXT");
+    }
+    if (!colNames.has('email')) {
+      db.run("ALTER TABLE users ADD COLUMN email TEXT");
+    }
+    if (!colNames.has('username')) {
+      db.run("ALTER TABLE users ADD COLUMN username TEXT");
+    }
+  });
 
   db.run(`
     CREATE TABLE IF NOT EXISTS logs (

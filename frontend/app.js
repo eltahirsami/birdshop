@@ -19,10 +19,7 @@ const INVOICE_STYLE = `
 
 const SHOP_HEADER_HTML = `
   <div class="shop-header">
-    <div class="shop-name">🦜 SKY BIRD - سكاي بيرد</div>
-    <div class="shop-info">📞 55951951 | 71433497</div>
-    <div class="shop-info">Instagram: hudeib_bird_ds</div>
-    <div class="shop-info">C.R: 180588</div>
+    <div class="shop-name">🧾 Smart POS System</div>
   </div>
 `
 
@@ -595,10 +592,7 @@ async function searchInvoice() {
 
   const invoiceHtml = `
     <div style="text-align:center; border-bottom:2px dashed #000; padding-bottom:8px; margin-bottom:8px;">
-      <div style="font-size:18px; font-weight:bold;">🦜 SKY BIRD - سكاي بيرد</div>
-      <div style="font-size:11px; color:#555;">📞 55951951 | 71433497</div>
-      <div style="font-size:11px; color:#555;">Instagram: hudeib_bird_ds</div>
-      <div style="font-size:11px; color:#555;">C.R: 180588</div>
+      <div style="font-size:18px; font-weight:bold;">🧾 Smart POS System</div>
     </div>
     <p>🧾 رقم الفاتورة: ${data.invoice_number}</p>
     <p>📅 تاريخ الفاتورة: ${new Date(data.date).toLocaleString()}</p>
@@ -1109,9 +1103,7 @@ async function printDailyReport() {
     </head>
     <body>
       <div class="header">
-        <div class="shop-name">🦜 SKY BIRD - سكاي بيرد</div>
-        <div class="shop-info">📞 55951951 | 71433497</div>
-        <div class="shop-info">C.R: 180588</div>
+        <div class="shop-name">🧾 Smart POS System</div>
       </div>
 
       <h2>📊 تقرير اليوم</h2>

@@ -126,24 +126,6 @@ app.get('/', (req, res) => {
 })
 
 /* =========================
-   تسجيل الدخول
-========================= */
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  db.get("SELECT * FROM users WHERE username=?", [username], async (err, user) => {
-    if (err || !user) {
-      return res.status(401).json({ error: 'بيانات غير صحيحة' });
-    }
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) {
-      return res.status(401).json({ error: 'بيانات غير صحيحة' });
-    }
-    req.session.user = { id: user.id, role: user.role, username: user.username };
-    res.json({ message: "تم تسجيل الدخول" });
-  });
-});
-
-/* =========================
    فحص الجلسة
 ========================= */
 app.get('/me', (req, res) => {
@@ -847,6 +829,51 @@ app.get('/developer/stats', requireDeveloper, (req, res) => {
 /* =========================
    تشغيل السيرفر
 ========================= */
+app.post('/login', (req, res) => {
+  const { email, username, password } = req.body;
+  const loginValue = (email || username || '').trim();
+  if (!loginValue || !password) {
+    return res.status(400).json({ success: false, message: 'Invalid login' });
+  }
+
+  db.get(
+    "SELECT * FROM users WHERE email = ? OR username = ?",
+    [loginValue, loginValue],
+    async (err, user) => {
+      if (err || !user) {
+        return res.status(401).json({ success: false, message: 'Invalid login' });
+      }
+
+      // Keep compatibility with old hashed passwords and any plain-text records.
+      let passwordOk = false;
+      if (typeof user.password === 'string' && user.password.startsWith('$2')) {
+        passwordOk = await bcrypt.compare(password, user.password);
+      } else {
+        passwordOk = user.password === password;
+      }
+
+      if (!passwordOk) {
+        return res.status(401).json({ success: false, message: 'Invalid login' });
+      }
+
+      req.session.user = {
+        id: user.id,
+        role: user.role,
+        username: user.username || user.name || user.email || 'user'
+      };
+
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          name: user.name || user.username || user.email,
+          role: user.role
+        }
+      });
+    }
+  );
+});
+
 app.listen(3000, () => {
   console.log("✅ Server running on http://localhost:3000");
 });

@@ -1,5 +1,5 @@
-# birdshop
-# 🐦 BirdShop POS System
+# smart-pos-system
+# 🧾 Smart POS System
 
 A complete **Point of Sale (POS)** and inventory management system for stores and businesses.
 

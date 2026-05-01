@@ -37,7 +37,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
-    title: 'Sky Bird',
+    title: '🧾 Smart POS System',
     webPreferences: { nodeIntegration: false, contextIsolation: true }
   })
   mainWindow.webContents.setWindowOpenHandler(function() {
