@@ -12,6 +12,25 @@
 
 <div class="card">
   <h3>📦 إدارة المنتجات</h3>
+
+  <div id="editForm" style="display:none;background:#fff8e1;padding:15px;border:1px solid #e67e22;border-radius:8px;margin-bottom:15px;">
+    <h4 style="margin:0 0 10px;">✏️ تعديل المنتج</h4>
+    <input type="hidden" id="editId">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <input type="text" id="editName" placeholder="اسم المنتج" style="padding:6px;border:1px solid #ccc;border-radius:4px;">
+      <input type="text" id="editCategory" placeholder="التصنيف" style="padding:6px;border:1px solid #ccc;border-radius:4px;">
+      <input type="number" id="editPrice" placeholder="سعر البيع" style="padding:6px;border:1px solid #ccc;border-radius:4px;">
+      <input type="number" id="editCostPrice" placeholder="سعر الشراء" style="padding:6px;border:1px solid #ccc;border-radius:4px;">
+      <input type="number" id="editStock" placeholder="المخزون" style="padding:6px;border:1px solid #ccc;border-radius:4px;">
+      <input type="text" id="editBarcode" placeholder="الباركود (اختياري)" style="padding:6px;border:1px solid #ccc;border-radius:4px;">
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button onclick="saveEdit()" style="background:#27ae60;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">💾 حفظ</button>
+      <button onclick="cancelEdit()" style="background:#e74c3c;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">❌ إلغاء</button>
+      <span id="editMsg" style="color:#c0392b;font-size:13px;"></span>
+    </div>
+  </div>
+
   <table>
     <thead>
       <tr>

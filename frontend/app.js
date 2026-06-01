@@ -4,6 +4,7 @@ let userRole = null
 let editMode = false
 let editId = null
 let isCheckoutProcessing = false
+let salesHistoryPage = 1
 
 const INVOICE_STYLE = `
   body { font-family:tahoma; width:80mm; margin:0; padding:5px; }
@@ -375,8 +376,10 @@ function searchProducts() {
 /* =========================
 سجل المبيعات
 ========================= */
-async function loadSalesHistory() {
-  const res = await fetch('/sales/history', { credentials: 'include' })
+async function loadSalesHistory(page) {
+  page = (page && page >= 1) ? page : 1
+  salesHistoryPage = page
+  const res = await fetch('/sales/history?page=' + page, { credentials: 'include' })
   const data = await res.json()
 
   const adminTable = document.getElementById("salesHistoryTable")
@@ -410,6 +413,13 @@ async function loadSalesHistory() {
 
   if (adminTable) adminTable.innerHTML = adminRows()
   if (cashierTable) cashierTable.innerHTML = cashierRows()
+
+  const pageInfo = document.getElementById("historyPageInfo")
+  const prevBtn = document.getElementById("prevHistoryPage")
+  const nextBtn = document.getElementById("nextHistoryPage")
+  if (pageInfo) pageInfo.innerText = 'صفحة ' + page
+  if (prevBtn) prevBtn.disabled = page <= 1
+  if (nextBtn) nextBtn.disabled = !data || data.length < 50
 }
 
 async function clearSalesHistory() {
@@ -478,15 +488,14 @@ async function loadTodayProfit() {
 async function checkLowStock() {
   const res = await fetch('/products/low-stock', { credentials: 'include' })
   const data = await res.json()
-  const low = data.filter(p => p.stock <= 5)
 
-  if (low.length === 0) {
+  if (data.length === 0) {
     alert("لا يوجد منتجات منخفضة المخزون")
     return
   }
 
   let rows = ""
-  low.forEach(p => {
+  data.forEach(p => {
   const editBtn = `<button type="button" onclick="window.opener.editProduct(${p.id});window.close();">✏️ تعديل</button>`
 
     rows += `

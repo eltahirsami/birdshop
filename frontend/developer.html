@@ -247,6 +247,7 @@ window.onload = async () => {
   loadBackups()
   loadSystemInfo()
   loadLogs()
+  loadSettings()
   setInterval(loadLogs, 60000)
 }
 
@@ -357,10 +358,36 @@ async function changePassword() {
   }
 }
 
+async function loadSettings() {
+  try {
+    const res = await fetch('/developer/settings', { credentials: 'include' })
+    if (!res.ok) return
+    const data = await res.json()
+    if (data.shop_name !== undefined) document.getElementById('shopName').value = data.shop_name
+    if (data.whatsapp_number !== undefined) document.getElementById('whatsappNumber').value = data.whatsapp_number
+  } catch (e) { /* ignore — settings are optional */ }
+}
+
 async function saveSettings() {
-  const shopName = document.getElementById('shopName').value
-  addLog('تم حفظ الإعدادات: ' + shopName)
-  alert('تم حفظ الإعدادات')
+  const shopName = document.getElementById('shopName').value.trim()
+  const whatsapp = document.getElementById('whatsappNumber').value.trim()
+  try {
+    const res = await fetch('/developer/settings', {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shop_name: shopName, whatsapp_number: whatsapp })
+    })
+    const data = await res.json()
+    if (res.ok) {
+      showAlert('alertPass', '✅ تم حفظ الإعدادات بنجاح', 'success')
+      addLog('تم حفظ الإعدادات: ' + shopName)
+    } else {
+      showAlert('alertPass', data.error || 'فشل الحفظ', 'danger')
+    }
+  } catch (e) {
+    showAlert('alertPass', 'فشل الاتصال بالسيرفر', 'danger')
+  }
 }
 
 async function loadBackups() {

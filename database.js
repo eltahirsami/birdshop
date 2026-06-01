@@ -135,6 +135,17 @@ db.serialize(() => {
       FOREIGN KEY (purchase_id) REFERENCES supplier_purchases(id)
     )
   `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL DEFAULT ''
+    )
+  `);
+
+  db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('shop_name', 'Smart POS System')");
+  db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp_number', '')");
+  db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('low_stock_threshold', '5')");
 });
 
 module.exports = db;

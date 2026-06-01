@@ -8,6 +8,13 @@ const db = require('./database');
 const cron = require('node-cron');
 const fs = require('fs');
 
+let sendDailyReport = null;
+try {
+  sendDailyReport = require('./whatsapp-bot').sendDailyReport;
+} catch (e) {
+  console.log('WhatsApp bot not available:', e.message);
+}
+
 const DB_FILE = process.env.DB_PATH || path.join(__dirname, 'birdshop.db')
 
 
@@ -384,7 +391,7 @@ app.get('/sales/invoice/:number', requireLogin, (req, res) => {
   const sql = "SELECT s.invoice_number, s.quantity, s.total, s.created_at, p.name FROM sales s JOIN products p ON p.id = s.product_id WHERE s.invoice_number = ?";
   db.all(sql, [invoiceNumber], (err, rows) => {
     if (err) return res.status(500).json({ error: "database error" });
-    if (!rows.length) return res.json(null);
+    if (!rows.length) return res.status(404).json({ error: 'الفاتورة غير موجودة' });
     res.json({ invoice_number: invoiceNumber, date: rows[0].created_at, items: rows });
   });
 });
@@ -418,9 +425,12 @@ app.get('/products/top', requireLogin, requireCashier, (req, res) => {
 });
 
 app.get('/products/low-stock', requireLogin, requireCashier, (req, res) => {
-  db.all("SELECT * FROM products WHERE stock<=5", [], (err, rows) => {
-    if (err) return res.status(500).json(err);
-    res.json(rows);
+  db.get("SELECT value FROM settings WHERE key='low_stock_threshold'", [], (err, row) => {
+    const threshold = parseInt((row && row.value) || '5', 10);
+    db.all("SELECT * FROM products WHERE stock<=?", [threshold], (err2, rows) => {
+      if (err2) return res.status(500).json(err2);
+      res.json(rows);
+    });
   });
 });
 
@@ -769,7 +779,7 @@ app.get('/developer/backups', requireDeveloper, (req, res) => {
   res.json(files);
 });
 
-app.post('/developer/backup-now', requireDeveloper, (req, res) => {
+app.post('/developer/backup-now', requireCashier, (req, res) => {
   const date = new Date().toISOString().slice(0, 10);
   const time = new Date().toTimeString().slice(0, 8).replace(/:/g, '-');
   const backupDir = path.join(__dirname, 'backups');
@@ -810,6 +820,33 @@ app.get('/developer/logs', requireDeveloper, (req, res) => {
     if (err) return res.status(500).json({ error: 'db error' });
     res.json(rows);
   });
+});
+
+app.get('/developer/settings', requireDeveloper, (req, res) => {
+  db.all("SELECT key, value FROM settings", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'db error' });
+    const obj = {};
+    rows.forEach(r => { obj[r.key] = r.value; });
+    res.json(obj);
+  });
+});
+
+app.put('/developer/settings', requireDeveloper, (req, res) => {
+  const pairs = Object.entries(req.body || {});
+  if (pairs.length === 0) return res.status(400).json({ error: 'no settings provided' });
+
+  function upsertNext(i) {
+    if (i >= pairs.length) {
+      logAction(req.session.user.id, req.session.user.username, 'حفظ الإعدادات', pairs.map(([k, v]) => k + '=' + v).join(', '));
+      return res.json({ message: 'تم حفظ الإعدادات' });
+    }
+    const [key, value] = pairs[i];
+    db.run("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [key, String(value)], (err) => {
+      if (err) return res.status(500).json({ error: 'db error' });
+      upsertNext(i + 1);
+    });
+  }
+  upsertNext(0);
 });
 
 app.get('/developer/stats', requireDeveloper, (req, res) => {
@@ -883,7 +920,7 @@ app.listen(3000, () => {
 ========================= */
 
 
-// نسخ احتياطي محلي كل يوم الساعة 11 مساءً
+// نسخ احتياطي محلي كل يوم الساعة 8 مساءً + تقرير واتساب
 cron.schedule('0 20 * * *', () => {
   const date = new Date().toISOString().slice(0, 10);
   const backupDir = path.join(__dirname, 'backups');
@@ -896,6 +933,9 @@ cron.schedule('0 20 * * *', () => {
     files.slice(0, files.length - 30).forEach(f => {
       fs.unlinkSync(path.join(backupDir, f));
     });
+  }
+  if (sendDailyReport) {
+    sendDailyReport().catch(e => console.error("❌ فشل إرسال تقرير واتساب:", e.message));
   }
 }, { timezone: "Asia/Qatar" });
 
