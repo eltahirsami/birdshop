@@ -8,4 +8,4 @@ All analysis bugs resolved. Remaining items are enhancements, not bugs.
 - [ ] Add pagination controls to invoice table in frontend
 - [ ] Add search/filter to sales history table
 - [ ] Expose `low_stock_threshold` setting in developer UI (table exists, value changeable via API, but no input in developer.html yet)
-- [ ] Update WhatsApp target number to come from `settings.whatsapp_number` instead of hardcoded value in `whatsapp-bot.js:89`
+- [x] ~~Update WhatsApp target number to come from `settings.whatsapp_number`~~ — **done** (Feature #2)

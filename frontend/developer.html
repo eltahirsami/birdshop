@@ -145,6 +145,7 @@
         <span class="label">// إعدادات النظام</span>
         <input class="input" id="shopName" placeholder="اسم المحل">
         <input class="input" id="whatsappNumber" placeholder="رقم الواتساب (974xxxxxxxx)">
+        <input class="input" id="lowStockThreshold" type="number" min="1" placeholder="حد المخزون المنخفض (افتراضي: 5)">
         <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ الإعدادات</button>
       </div>
     </div>
@@ -365,18 +366,20 @@ async function loadSettings() {
     const data = await res.json()
     if (data.shop_name !== undefined) document.getElementById('shopName').value = data.shop_name
     if (data.whatsapp_number !== undefined) document.getElementById('whatsappNumber').value = data.whatsapp_number
+    if (data.low_stock_threshold !== undefined) document.getElementById('lowStockThreshold').value = data.low_stock_threshold
   } catch (e) { /* ignore — settings are optional */ }
 }
 
 async function saveSettings() {
   const shopName = document.getElementById('shopName').value.trim()
   const whatsapp = document.getElementById('whatsappNumber').value.trim()
+  const threshold = document.getElementById('lowStockThreshold').value.trim()
   try {
     const res = await fetch('/developer/settings', {
       method: 'PUT',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ shop_name: shopName, whatsapp_number: whatsapp })
+      body: JSON.stringify({ shop_name: shopName, whatsapp_number: whatsapp, low_stock_threshold: threshold || '5' })
     })
     const data = await res.json()
     if (res.ok) {

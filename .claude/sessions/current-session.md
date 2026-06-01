@@ -1,35 +1,35 @@
 # Current Session
 
 **Date:** 2026-06-01
-**Status:** All 8 analysis bugs fixed ✅
+**Status:** Feature #2 complete ✅
 
 ## What was done this session
 
-Fixed all bugs found during the initial analysis, in priority order:
+### Bug fix pass (all 8 resolved — see COMPLETED.md)
 
-1. **Bug 1** — `GET /sales/invoice/:number` returns HTTP 404 on missing invoice (was 200+null) → `index.js`
-2. **Bug 2** — `checkLowStock()` removed redundant client-side filter → `frontend/app.js`
-3. **Bug 3** — `/developer/backup-now` guard lowered to `requireCashier` (was `requireDeveloper`) → `index.js`
-4. **Bug 4** — Sales history pagination: `loadSalesHistory(page)` sends `?page=N`, prev/next buttons added → `app.js` + `index.html`
-5. **Bug 5** — `saveSettings()` now real: `settings` DB table + GET/PUT API routes + developer.html loads/saves settings → `database.js` + `index.js` + `developer.html`
-6. **Bug 6** — WhatsApp daily report wired to 20:00 cron with try/catch guard → `index.js`
-7. **Bug 7** — `admin.html` edit replaced `prompt()` with inline form (all fields + credentials) → `admin.html` + `admin.js`
-8. **Bug 8** — `/products/low-stock` reads threshold from `settings` table instead of hardcoded 5 → `index.js`
+### Feature #2 — WhatsApp number from settings + low-stock threshold UI
+
+**whatsapp-bot.js:**
+- Removed hardcoded `"55951951@c.us"` number
+- `sendDailyReport()` now queries `settings` table for `whatsapp_number` at send time
+- If empty → logs `⚠️ رقم واتساب غير مضبوط` and resolves without error
+- Accepts bare number (`974xxxxxxxx`) or full ID (`974xxxxxxxx@c.us`)
+
+**frontend/developer.html:**
+- Added `low_stock_threshold` number input to the settings form
+- `loadSettings()` populates all 3 fields (shop_name, whatsapp_number, low_stock_threshold)
+- `saveSettings()` sends all 3 to `PUT /developer/settings`
 
 ## Verification
 
-- Server starts clean: `✅ Server running on http://localhost:3000`
-- DB connected: `Connected to SQLite database: birdshop.db`
-- Settings table verified: `[{shop_name, whatsapp_number, low_stock_threshold}]`
-- WhatsApp bot loads (QR shown = Puppeteer available on this machine)
+- DB lookup path tested: empty number → correct graceful path
+- Server starts clean with WhatsApp bot loaded
 
 ## State at end of session
 
-- All bug fixes applied — no new features added
-- 0 items in IN_PROGRESS.md
-- TODO.md contains only low-priority enhancements
+- Feature #1 (category management) and Feature #3 (sales search) NOT started — awaiting approval
+- TODO.md updated to remove Feature #2 item
 
 ## Next session should
 
-Pick from TODO.md enhancements, or wait for new feature requests.
-Suggested: expose `low_stock_threshold` as an editable field in developer.html settings form.
+Wait for user to approve Feature #1 (product category management) or Feature #3 (sales history search/filter) before starting either.

@@ -83,17 +83,22 @@ async function sendDailyReport() {
             "🔥 الأكثر مبيعًا: " + (topRow ? topRow.name : "-") + "\n" +
             "━━━━━━━━━━━━━━━━━━"
 
-          try {
-            // ضع رقم واتساب هنا بالصيغة الدولية بدون + أو صفر
-            // مثال: 9665xxxxxxxx للسعودية
-            const number = "55951951@c.us"
-            await client.sendMessage(number, message)
-            console.log("✅ تم إرسال التقرير")
-            resolve()
-          } catch (e) {
-            console.error("❌ فشل الإرسال:", e)
-            reject(e)
-          }
+          db.get("SELECT value FROM settings WHERE key='whatsapp_number'", [], async (settErr, settRow) => {
+            const rawNumber = (settRow && settRow.value) ? settRow.value.trim() : ''
+            if (!rawNumber) {
+              console.log("⚠️ رقم واتساب غير مضبوط في الإعدادات — لم يتم إرسال التقرير")
+              return resolve()
+            }
+            const number = rawNumber.includes('@') ? rawNumber : rawNumber + '@c.us'
+            try {
+              await client.sendMessage(number, message)
+              console.log("✅ تم إرسال التقرير إلى " + rawNumber)
+              resolve()
+            } catch (e) {
+              console.error("❌ فشل الإرسال:", e)
+              reject(e)
+            }
+          })
         })
       })
     })
