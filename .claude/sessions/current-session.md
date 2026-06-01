@@ -1,35 +1,54 @@
 # Current Session
 
 **Date:** 2026-06-01
-**Status:** Feature #2 complete ✅
+**Status:** Feature #1 complete ✅
 
 ## What was done this session
 
 ### Bug fix pass (all 8 resolved — see COMPLETED.md)
 
-### Feature #2 — WhatsApp number from settings + low-stock threshold UI
+### Feature #2 — WhatsApp number from settings + low-stock threshold UI (done)
 
-**whatsapp-bot.js:**
-- Removed hardcoded `"55951951@c.us"` number
-- `sendDailyReport()` now queries `settings` table for `whatsapp_number` at send time
-- If empty → logs `⚠️ رقم واتساب غير مضبوط` and resolves without error
-- Accepts bare number (`974xxxxxxxx`) or full ID (`974xxxxxxxx@c.us`)
+### Feature #1 — Product Category Management
 
-**frontend/developer.html:**
-- Added `low_stock_threshold` number input to the settings form
-- `loadSettings()` populates all 3 fields (shop_name, whatsapp_number, low_stock_threshold)
-- `saveSettings()` sends all 3 to `PUT /developer/settings`
+**database.js:**
+- Added `categories` table (`id INTEGER PRIMARY KEY AUTOINCREMENT`, `name TEXT UNIQUE NOT NULL`)
+- Backfill: `INSERT OR IGNORE INTO categories (name) SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category != ''`
 
-## Verification
+**index.js:**
+- `GET /categories` — returns all categories ordered by name (requireLogin)
+- `POST /categories` — adds a new category; 409 if duplicate (requireCashier)
+- `DELETE /categories/:id` — deletes only if no products use that category (requireAdmin)
 
-- DB lookup path tested: empty number → correct graceful path
-- Server starts clean with WhatsApp bot loaded
+**frontend/index.html:**
+- Replaced `<input type="text" id="category">` with `<select id="category">` + inline "add new" row (`#newCategoryInput` + ➕ button)
+- Added `#categoryMgmt` div with `#categoryTags` — visible to admin only, shows all categories with × delete buttons
+
+**frontend/app.js:**
+- Added `let categories = []` to state
+- `loadCategories()` — fetches `/categories`, populates `categories`, then calls `renderCategorySelect()` + `renderCategoryTags()`
+- `renderCategorySelect()` — rebuilds `<select id="category">` options, preserves current selection
+- `renderCategoryTags()` — renders admin-only tag pills with delete buttons; hides `#categoryMgmt` for non-admins
+- `addCategory()` — POST to `/categories`, then reload + auto-selects the new category
+- `deleteCategory(id)` — DELETE to `/categories/:id`, then reload
+- `window.onload` now calls `await loadCategories()` after `loadProducts()`
+
+**frontend/admin.html:**
+- Replaced `<input type="text" id="editCategory">` with `<select id="editCategory">` + inline "add new" row (`#newCategoryAdmin` + ➕ button)
+
+**frontend/admin.js:**
+- Added `let categories = []`
+- `loadCategories()` — fetches `/categories`, calls `renderCategoryDropdown()`
+- `renderCategoryDropdown(selectedName)` — rebuilds `<select id="editCategory">` options
+- `addCategoryAdmin()` — POST to `/categories`, reloads, auto-selects new category
+- `editProduct(id)` — now calls `renderCategoryDropdown(p.category)` instead of `sel.value = p.category`
+- Init: `loadCategories()` called before `loadProducts()`
 
 ## State at end of session
 
-- Feature #1 (category management) and Feature #3 (sales search) NOT started — awaiting approval
-- TODO.md updated to remove Feature #2 item
+- Feature #1 ✅, Feature #2 ✅
+- Feature #3 (sales history search/filter) NOT started — awaiting approval
 
 ## Next session should
 
-Wait for user to approve Feature #1 (product category management) or Feature #3 (sales history search/filter) before starting either.
+Wait for user to approve Feature #3 (sales history search/filter) before starting it.

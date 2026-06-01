@@ -17,6 +17,14 @@
 
 ## Features (2026-06-01)
 
+- [x] **Feature #1** — Product Category Management:
+  - `database.js`: Added `categories` table (id, name UNIQUE). Backfills from `products.category` on startup so no existing data is lost.
+  - `index.js`: Added `GET /categories`, `POST /categories` (cashier+), `DELETE /categories/:id` (admin, blocked if products use the category).
+  - `frontend/index.html`: Replaced free-text category `<input>` with `<select>` + inline "add new" row. Added admin-only category tags section with per-tag delete buttons.
+  - `frontend/app.js`: Added `loadCategories()`, `renderCategorySelect()`, `renderCategoryTags()`, `addCategory()`, `deleteCategory()`. Called in `window.onload`.
+  - `frontend/admin.html`: Replaced `editCategory` text input with `<select>` + inline "add new" row.
+  - `frontend/admin.js`: Added `loadCategories()`, `renderCategoryDropdown()`, `addCategoryAdmin()`. `editProduct()` now calls `renderCategoryDropdown(p.category)` to pre-select. Init calls `loadCategories()` before `loadProducts()`.
+
 - [x] **Feature #2** — WhatsApp number + low-stock threshold fully wired:
   - `whatsapp-bot.js`: reads `whatsapp_number` from `settings` table at send time (was hardcoded `55951951@c.us`). Fails gracefully with a log if number is not set.
   - Number format: accepts `974xxxxxxxx` (auto-appends `@c.us`) or full `974xxxxxxxx@c.us`

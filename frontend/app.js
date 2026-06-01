@@ -1,4 +1,5 @@
 let products = []
+let categories = []
 let cart = []
 let userRole = null
 let editMode = false
@@ -23,6 +24,77 @@ const SHOP_HEADER_HTML = `
     <div class="shop-name">🧾 Smart POS System</div>
   </div>
 `
+
+/* =========================
+التصنيفات
+========================= */
+async function loadCategories() {
+  const res = await fetch('/categories', { credentials: 'include' })
+  categories = await res.json()
+  renderCategorySelect()
+  renderCategoryTags()
+}
+
+function renderCategorySelect() {
+  const sel = document.getElementById('category')
+  if (!sel) return
+  const current = sel.value
+  sel.innerHTML = '<option value="">-- اختر التصنيف --</option>'
+  categories.forEach(c => {
+    const opt = document.createElement('option')
+    opt.value = c.name
+    opt.textContent = c.name
+    if (c.name === current) opt.selected = true
+    sel.appendChild(opt)
+  })
+}
+
+function renderCategoryTags() {
+  const mgmt = document.getElementById('categoryMgmt')
+  const container = document.getElementById('categoryTags')
+  if (!mgmt || !container) return
+  if (userRole !== 'admin') { mgmt.style.display = 'none'; return }
+  mgmt.style.display = 'block'
+  container.innerHTML = ''
+  categories.forEach(c => {
+    const tag = document.createElement('span')
+    tag.style.cssText = 'display:inline-flex;align-items:center;gap:3px;padding:3px 8px;background:#dce9f5;border-radius:12px;font-size:12px;'
+    tag.innerHTML = `${c.name} <button type="button" onclick="deleteCategory(${c.id})" title="حذف" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:14px;line-height:1;padding:0;">×</button>`
+    container.appendChild(tag)
+  })
+}
+
+async function addCategory() {
+  const input = document.getElementById('newCategoryInput')
+  const name = input.value.trim()
+  if (!name) return
+  const res = await fetch('/categories', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  })
+  if (res.ok) {
+    input.value = ''
+    await loadCategories()
+    const sel = document.getElementById('category')
+    if (sel) sel.value = name
+  } else {
+    const data = await res.json()
+    alert(data.message || 'فشل إضافة التصنيف')
+  }
+}
+
+async function deleteCategory(id) {
+  if (!confirm('هل تريد حذف هذا التصنيف؟')) return
+  const res = await fetch('/categories/' + id, { method: 'DELETE', credentials: 'include' })
+  const data = await res.json()
+  if (res.ok) {
+    await loadCategories()
+  } else {
+    alert(data.message || 'فشل حذف التصنيف')
+  }
+}
 
 /* =========================
 إحصائيات اليوم
@@ -1038,6 +1110,7 @@ function showStockAlert(msg, type) {
 window.onload = async () => {
   await getUser()
   await loadProducts()
+  await loadCategories()
 
   loadTodayProfit()
   loadTodayStats()

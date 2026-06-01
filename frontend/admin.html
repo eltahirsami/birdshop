@@ -18,7 +18,15 @@
     <input type="hidden" id="editId">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
       <input type="text" id="editName" placeholder="اسم المنتج" style="padding:6px;border:1px solid #ccc;border-radius:4px;">
-      <input type="text" id="editCategory" placeholder="التصنيف" style="padding:6px;border:1px solid #ccc;border-radius:4px;">
+      <div>
+        <select id="editCategory" style="padding:6px;border:1px solid #ccc;border-radius:4px;width:100%;">
+          <option value="">-- اختر التصنيف --</option>
+        </select>
+        <div style="display:flex;gap:4px;margin-top:4px;">
+          <input type="text" id="newCategoryAdmin" placeholder="تصنيف جديد..." style="flex:1;padding:5px;border:1px solid #ccc;border-radius:4px;font-size:13px;">
+          <button type="button" onclick="addCategoryAdmin()" style="padding:5px 8px;border:1px solid #ccc;border-radius:4px;cursor:pointer;">➕</button>
+        </div>
+      </div>
       <input type="number" id="editPrice" placeholder="سعر البيع" style="padding:6px;border:1px solid #ccc;border-radius:4px;">
       <input type="number" id="editCostPrice" placeholder="سعر الشراء" style="padding:6px;border:1px solid #ccc;border-radius:4px;">
       <input type="number" id="editStock" placeholder="المخزون" style="padding:6px;border:1px solid #ccc;border-radius:4px;">

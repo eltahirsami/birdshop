@@ -110,7 +110,15 @@ overflow:hidden;">
 <h3>➕ إضافة منتج جديد</h3>
 
 <input type="text" id="name" placeholder="اسم المنتج">
-<input type="text" id="category" placeholder="التصنيف">
+<div style="display:inline-block;vertical-align:top;">
+  <select id="category" style="padding:5px;border:1px solid #ccc;border-radius:4px;min-width:150px;display:block;">
+    <option value="">-- اختر التصنيف --</option>
+  </select>
+  <div style="display:flex;gap:4px;margin-top:4px;">
+    <input type="text" id="newCategoryInput" placeholder="تصنيف جديد..." style="flex:1;padding:4px;border:1px solid #ccc;border-radius:4px;font-size:13px;">
+    <button type="button" onclick="addCategory()" style="padding:4px 8px;border:1px solid #ccc;border-radius:4px;cursor:pointer;">➕</button>
+  </div>
+</div>
 
 <input type="number" id="price" placeholder="سعر البيع">
 <input type="number" id="cost_price" placeholder="سعر الشراء">
@@ -121,6 +129,11 @@ overflow:hidden;">
 <button type="button" onclick="addProduct()">💾 حفظ المنتج</button>
 
 <p id="formMessage"></p>
+
+<div id="categoryMgmt" style="display:none;margin:8px 0;padding:8px;background:#f0f4f8;border-radius:6px;">
+  <strong style="font-size:13px;">🗂️ التصنيفات:</strong>
+  <span id="categoryTags" style="display:inline-flex;flex-wrap:wrap;gap:5px;margin-right:8px;"></span>
+</div>
 
 <hr>
 

@@ -1,4 +1,45 @@
 let products = []
+let categories = []
+
+async function loadCategories() {
+  const res = await fetch('/categories', { credentials: 'include' })
+  categories = await res.json()
+  renderCategoryDropdown()
+}
+
+function renderCategoryDropdown(selectedName) {
+  const sel = document.getElementById('editCategory')
+  if (!sel) return
+  const val = selectedName !== undefined ? selectedName : sel.value
+  sel.innerHTML = '<option value="">-- اختر التصنيف --</option>'
+  categories.forEach(c => {
+    const opt = document.createElement('option')
+    opt.value = c.name
+    opt.textContent = c.name
+    if (c.name === val) opt.selected = true
+    sel.appendChild(opt)
+  })
+}
+
+async function addCategoryAdmin() {
+  const input = document.getElementById('newCategoryAdmin')
+  const name = input.value.trim()
+  if (!name) return
+  const res = await fetch('/categories', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  })
+  if (res.ok) {
+    input.value = ''
+    await loadCategories()
+    renderCategoryDropdown(name)
+  } else {
+    const data = await res.json()
+    alert(data.message || 'فشل إضافة التصنيف')
+  }
+}
 
 async function loadProducts() {
   const res = await fetch('/products', { credentials: 'include' })
@@ -33,7 +74,7 @@ function editProduct(id) {
   if (!p) return
   document.getElementById('editId').value = p.id
   document.getElementById('editName').value = p.name
-  document.getElementById('editCategory').value = p.category
+  renderCategoryDropdown(p.category)
   document.getElementById('editPrice').value = p.price
   document.getElementById('editCostPrice').value = p.cost_price ?? 0
   document.getElementById('editStock').value = p.stock
@@ -77,4 +118,5 @@ async function saveEdit() {
   }
 }
 
+loadCategories()
 loadProducts()

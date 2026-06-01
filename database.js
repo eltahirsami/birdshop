@@ -146,6 +146,14 @@ db.serialize(() => {
   db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('shop_name', 'Smart POS System')");
   db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp_number', '')");
   db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('low_stock_threshold', '5')");
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL
+    )
+  `);
+  db.run("INSERT OR IGNORE INTO categories (name) SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category != ''");
 });
 
 module.exports = db;

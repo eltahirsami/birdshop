@@ -200,6 +200,39 @@ app.delete('/products/:id', requireLogin, requireAdmin, (req, res) => {
 });
 
 /* =========================
+   التصنيفات
+========================= */
+app.get('/categories', requireLogin, (req, res) => {
+  db.all("SELECT * FROM categories ORDER BY name", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    res.json(rows);
+  });
+});
+
+app.post('/categories', requireLogin, requireCashier, (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'اسم التصنيف مطلوب', message: 'اسم التصنيف مطلوب' });
+  db.run("INSERT INTO categories (name) VALUES (?)", [name.trim()], function(err) {
+    if (err) return res.status(409).json({ error: 'التصنيف موجود مسبقاً', message: 'التصنيف موجود مسبقاً' });
+    res.json({ id: this.lastID, name: name.trim() });
+  });
+});
+
+app.delete('/categories/:id', requireLogin, requireAdmin, (req, res) => {
+  const id = req.params.id;
+  db.get("SELECT name FROM categories WHERE id=?", [id], (err, cat) => {
+    if (!cat) return res.status(404).json({ error: 'التصنيف غير موجود' });
+    db.get("SELECT COUNT(*) as cnt FROM products WHERE category=?", [cat.name], (err2, row) => {
+      if (row.cnt > 0) return res.status(400).json({ error: 'لا يمكن حذف تصنيف مرتبط بمنتجات', message: 'لا يمكن حذف تصنيف مرتبط بمنتجات' });
+      db.run("DELETE FROM categories WHERE id=?", [id], function(err3) {
+        if (err3) return res.status(500).json({ error: 'فشل الحذف' });
+        res.json({ message: 'تم حذف التصنيف' });
+      });
+    });
+  });
+});
+
+/* =========================
    البيع
 ========================= */
 app.post('/sales', requireLogin, requireCashier, (req, res) => {
