@@ -334,26 +334,118 @@ function renderPayPurchaseSelect() {
 
 async function loadPayments() {
   const body = document.getElementById('paymentsBody')
-  if (!body) return
-  body.innerHTML = ''
+  const spBody = document.getElementById('supplierPaymentsBody')
+  if (body) body.innerHTML = ''
+  if (spBody) spBody.innerHTML = ''
   if (!selectedSupplierId) return
   const rows = await fetchJson(`/suppliers/${selectedSupplierId}/payments`)
   if (!rows || rows.length === 0) {
-    body.innerHTML = `<tr><td colspan="4">لا توجد دفعات</td></tr>`
+    if (body) body.innerHTML = `<tr><td colspan="4">لا توجد دفعات</td></tr>`
+    if (spBody) spBody.innerHTML = `<tr><td colspan="4">لا توجد دفعات</td></tr>`
     return
   }
   rows.forEach(r => {
     const inv = r.invoice_number || r.purchase_id || '(على الحساب)'
     const dt = r.paid_at || r.created_at || ''
-    const tr = document.createElement('tr')
-    tr.innerHTML = `
-      <td>${r.supplier_name}</td>
-      <td>${inv}</td>
-      <td>${money(r.amount)}</td>
-      <td>${dt ? new Date(dt).toLocaleString('ar') : ''}</td>
-    `
-    body.appendChild(tr)
+    if (body) {
+      const tr = document.createElement('tr')
+      tr.innerHTML = `
+        <td>${r.supplier_name}</td>
+        <td>${inv}</td>
+        <td>${money(r.amount)}</td>
+        <td>${dt ? new Date(dt).toLocaleString('ar') : ''}</td>
+      `
+      body.appendChild(tr)
+    }
+    if (spBody) {
+      const tr2 = document.createElement('tr')
+      tr2.innerHTML = `
+        <td>${dt ? new Date(dt).toLocaleDateString('ar') : '—'}</td>
+        <td>${money(r.amount)}</td>
+        <td>${r.method || '—'}</td>
+        <td>${r.notes || '—'}</td>
+      `
+      spBody.appendChild(tr2)
+    }
   })
+}
+
+async function printSupplierStatement() {
+  if (!selectedSupplierId) { alert('اختر مورد أولاً'); return }
+  const sp = suppliers.find(s => s.id === selectedSupplierId)
+  try {
+    const [purchases, payments, summary] = await Promise.all([
+      fetchJson(`/suppliers/${selectedSupplierId}/purchases`),
+      fetchJson(`/suppliers/${selectedSupplierId}/payments`),
+      fetchJson(`/suppliers/${selectedSupplierId}/summary`)
+    ])
+
+    const txns = []
+    ;(purchases || []).forEach(p => {
+      txns.push({
+        sortDate: p.created_at || p.invoice_date || '',
+        displayDate: p.invoice_date || (p.created_at ? new Date(p.created_at).toLocaleDateString('ar') : ''),
+        label: `فاتورة ${p.invoice_number || p.id}`,
+        debit: Number(p.total) || 0,
+        credit: 0
+      })
+    })
+    ;(payments || []).forEach(p => {
+      const dt = p.paid_at || p.created_at || ''
+      txns.push({
+        sortDate: dt,
+        displayDate: dt ? new Date(dt).toLocaleDateString('ar') : '',
+        label: p.method ? `دفعة — ${p.method}` : 'دفعة',
+        debit: 0,
+        credit: Number(p.amount) || 0
+      })
+    })
+    txns.sort((a, b) => new Date(a.sortDate) - new Date(b.sortDate))
+
+    let balance = 0
+    const rows = txns.map(t => {
+      balance += t.debit - t.credit
+      return `<tr>
+        <td>${t.displayDate}</td>
+        <td>${t.label}</td>
+        <td>${t.debit ? money(t.debit) : ''}</td>
+        <td>${t.credit ? money(t.credit) : ''}</td>
+        <td>${money(balance)}</td>
+      </tr>`
+    }).join('')
+
+    const html = `
+      <html dir="rtl">
+        <head><title>كشف حساب مورد</title><style>
+          ${PRINT_STYLE}
+          body { width:130mm; }
+        </style></head>
+        <body>
+          <div class="header">
+            <p class="title">كشف حساب مورد</p>
+            <div class="sub">المورد: ${sp?.name || ''}</div>
+            ${sp?.phone ? `<div class="sub">الهاتف: ${sp.phone}</div>` : ''}
+            ${sp?.address ? `<div class="sub">العنوان: ${sp.address}</div>` : ''}
+            <div class="sub">التاريخ: ${new Date().toLocaleDateString('ar')}</div>
+          </div>
+          <table>
+            <tr><th>التاريخ</th><th>البيان</th><th>مشتريات</th><th>مدفوع</th><th>الرصيد</th></tr>
+            ${rows || `<tr><td colspan="5">لا توجد معاملات</td></tr>`}
+          </table>
+          <div class="tot">الرصيد المتبقي: ${money(summary.remaining)}</div>
+          <div class="footer">كشف حساب الموردين — ${new Date().toLocaleDateString('ar')}</div>
+          <div style="text-align:center;margin-top:10px;">
+            <button onclick="window.print()" style="padding:6px 12px;border:none;border-radius:8px;background:#2980b9;color:#fff;font-family:tahoma;cursor:pointer">طباعة</button>
+          </div>
+        </body>
+      </html>
+    `
+    const win = window.open('', '', 'width=620,height=800')
+    win.document.write(html)
+    win.document.close()
+  } catch (e) {
+    alert(e.message)
+  }
 }
 
 async function viewPurchase(purchaseId) {
