@@ -10,6 +10,7 @@ let salesHistorySearch = ''
 let salesHistoryFrom = ''
 let salesHistoryTo = ''
 let invoicesPage = 1
+let invoicesSearch = ''
 let invoicesFrom = ''
 let invoicesTo = ''
 
@@ -507,6 +508,13 @@ async function loadSalesHistory(page) {
   if (pageInfo) pageInfo.innerText = `صفحة ${page} من ${totalPages} (${total} صف)`
   if (prevBtn) prevBtn.disabled = page <= 1
   if (nextBtn) nextBtn.disabled = page >= totalPages
+
+  const cashierPageInfo = document.getElementById("historyPageInfoCashier")
+  const cashierPrevBtn = document.getElementById("prevHistoryPageCashier")
+  const cashierNextBtn = document.getElementById("nextHistoryPageCashier")
+  if (cashierPageInfo) cashierPageInfo.innerText = `صفحة ${page} من ${totalPages} (${total} صف)`
+  if (cashierPrevBtn) cashierPrevBtn.disabled = page <= 1
+  if (cashierNextBtn) cashierNextBtn.disabled = page >= totalPages
 }
 
 function applyHistoryFilter() {
@@ -559,6 +567,7 @@ async function loadInvoices(page) {
   invoicesPage = page
 
   const params = new URLSearchParams({ page })
+  if (invoicesSearch) params.set('q', invoicesSearch)
   if (invoicesFrom) params.set('from', invoicesFrom)
   if (invoicesTo) params.set('to', invoicesTo)
 
@@ -595,21 +604,44 @@ async function loadInvoices(page) {
   if (pageInfo) pageInfo.innerText = `صفحة ${page} من ${totalPages} (${total} فاتورة)`
   if (prevBtn) prevBtn.disabled = page <= 1
   if (nextBtn) nextBtn.disabled = page >= totalPages
+
+  const cashierPageInfo = document.getElementById("invoicesPageInfoCashier")
+  const cashierPrevBtn = document.getElementById("prevInvoicesPageCashier")
+  const cashierNextBtn = document.getElementById("nextInvoicesPageCashier")
+  if (cashierPageInfo) cashierPageInfo.innerText = `صفحة ${page} من ${totalPages} (${total} فاتورة)`
+  if (cashierPrevBtn) cashierPrevBtn.disabled = page <= 1
+  if (cashierNextBtn) cashierNextBtn.disabled = page >= totalPages
 }
 
 function applyInvoicesFilter() {
+  invoicesSearch = (document.getElementById('invoicesSearch')?.value || '').trim()
   invoicesFrom = document.getElementById('invoicesFrom')?.value || ''
   invoicesTo = document.getElementById('invoicesTo')?.value || ''
   loadInvoices(1)
 }
 
 function resetInvoicesFilter() {
+  invoicesSearch = ''
   invoicesFrom = ''
   invoicesTo = ''
+  const s = document.getElementById('invoicesSearch')
   const f = document.getElementById('invoicesFrom')
   const t = document.getElementById('invoicesTo')
+  if (s) s.value = ''
   if (f) f.value = ''
   if (t) t.value = ''
+  loadInvoices(1)
+}
+
+function applyInvoicesFilterCashier() {
+  invoicesSearch = (document.getElementById('invoicesSearchCashier')?.value || '').trim()
+  loadInvoices(1)
+}
+
+function resetInvoicesFilterCashier() {
+  invoicesSearch = ''
+  const s = document.getElementById('invoicesSearchCashier')
+  if (s) s.value = ''
   loadInvoices(1)
 }
 
@@ -902,13 +934,42 @@ function openSuppliersWindow() {
 
 
 /* =========================
+helpers: fetch all pages
+========================= */
+async function fetchAllSalesRows() {
+  const all = []
+  let page = 1
+  while (true) {
+    const res = await fetch('/sales/history?page=' + page, { credentials: 'include' })
+    const data = await res.json()
+    const rows = data.rows || []
+    all.push(...rows)
+    if (all.length >= (data.total || 0) || rows.length < 50) break
+    page++
+  }
+  return all
+}
+
+async function fetchAllInvoicesRows() {
+  const all = []
+  let page = 1
+  while (true) {
+    const res = await fetch('/sales/invoices?page=' + page, { credentials: 'include' })
+    const data = await res.json()
+    const rows = data.rows || []
+    all.push(...rows)
+    if (all.length >= (data.total || 0) || rows.length < 50) break
+    page++
+  }
+  return all
+}
+
+/* =========================
 تصدير تقرير أسبوعي
 ========================= */
 async function exportWeeklyReport() {
-  const res = await fetch('/sales/history', { credentials: 'include' })
-  const sales = (await res.json()).rows || []
-  const resInvoices = await fetch('/sales/invoices', { credentials: 'include' })
-  const allInvoices = (await resInvoices.json()).rows || []
+  const sales = await fetchAllSalesRows()
+  const allInvoices = await fetchAllInvoicesRows()
   const resProducts = await fetch('/products', { credentials: 'include' })
   const products = await resProducts.json()
 
@@ -979,10 +1040,8 @@ async function exportWeeklyReport() {
 تصدير تقرير شهري
 ========================= */
 async function exportMonthlyReport() {
-  const res = await fetch('/sales/history', { credentials: 'include' })
-  const sales = (await res.json()).rows || []
-  const resInvoices = await fetch('/sales/invoices', { credentials: 'include' })
-  const allInvoices = (await resInvoices.json()).rows || []
+  const sales = await fetchAllSalesRows()
+  const allInvoices = await fetchAllInvoicesRows()
   const resProducts = await fetch('/products', { credentials: 'include' })
   const products = await resProducts.json()
 
@@ -1054,12 +1113,10 @@ async function exportMonthlyReport() {
 تصدير تقرير شامل
 ========================= */
 async function exportFullReport() {
-  const resInvoices = await fetch('/sales/invoices', { credentials: 'include' })
-  const invoices = (await resInvoices.json()).rows || []
+  const invoices = await fetchAllInvoicesRows()
   const resProducts = await fetch('/products', { credentials: 'include' })
   const products = await resProducts.json()
-  const resSales = await fetch('/sales/history', { credentials: 'include' })
-  const sales = (await resSales.json()).rows || []
+  const sales = await fetchAllSalesRows()
 
   let totalRevenue = 0, totalProfit = 0, totalItems = 0
   let productStats = {}, monthlyStats = {}
@@ -1214,13 +1271,10 @@ async function printDailyReport() {
   const resProfit = await fetch('/profits/today', { credentials: 'include' })
   const profit = await resProfit.json()
 
-  const resHistory = await fetch('/sales/history', { credentials: 'include' })
-  const allSales = (await resHistory.json()).rows || []
-
+  const allSales = await fetchAllSalesRows()
   const todaySales = allSales.filter(s => s.created_at.slice(0, 10) === today)
 
-  const resInvoices = await fetch('/sales/invoices', { credentials: 'include' })
-  const allInvoices = (await resInvoices.json()).rows || []
+  const allInvoices = await fetchAllInvoicesRows()
   const todayInvoices = allInvoices.filter(inv => inv.created_at.slice(0, 10) === today)
 
   const date = new Date().toLocaleDateString('ar', {

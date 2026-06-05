@@ -433,9 +433,11 @@ app.get('/sales/invoices', requireLogin, requireCashier, (req, res) => {
   const offset = (page - 1) * limit;
   const from = req.query.from || '';
   const to = req.query.to || '';
+  const q = (req.query.q || '').trim();
 
   const conds = [];
   const baseParams = [];
+  if (q) { conds.push("CAST(invoice_number AS TEXT) LIKE ?"); baseParams.push('%' + q + '%'); }
   if (from) { conds.push("date(created_at) >= ?"); baseParams.push(from); }
   if (to) { conds.push("date(created_at) <= ?"); baseParams.push(to); }
   const where = conds.length ? 'WHERE ' + conds.join(' AND ') : '';
