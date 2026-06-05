@@ -3,6 +3,8 @@
 | Session | Date | Focus | Outcome |
 |---|---|---|---|
 | init | 2026-06-01 | Initial project scan & memory setup | Created full .claude memory system |
+| session-2 | 2026-06-01 | Bug fixes + Features #1 & #2 | Fixed 8 bugs; category management; WhatsApp/threshold settings |
+| session-3 | 2026-06-05 | Features #3–#7 | Sales history search/filter, invoice pagination, export all records, invoice search, cashier history UI |
 
 ## How to start a new session
 
