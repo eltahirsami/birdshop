@@ -174,7 +174,15 @@ style="margin-bottom:10px;width:200px;padding:5px;"
 
 <h3>📊 سجل كل المبيعات</h3>
 
-<button onclick="loadSalesHistory()">🔄 تحديث السجل</button>
+<div style="margin:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+  <input type="text" id="historySearch" placeholder="🔍 بحث باسم المنتج" style="padding:4px 8px;border-radius:4px;border:1px solid #ccc;min-width:150px;" onkeydown="if(event.key==='Enter') applyHistoryFilter()">
+  <input type="date" id="historyFrom" style="padding:4px;border-radius:4px;border:1px solid #ccc;">
+  <span>إلى</span>
+  <input type="date" id="historyTo" style="padding:4px;border-radius:4px;border:1px solid #ccc;">
+  <button onclick="applyHistoryFilter()">🔍 بحث</button>
+  <button onclick="resetHistoryFilter()">✖ إعادة تعيين</button>
+  <button onclick="loadSalesHistory(salesHistoryPage)">🔄 تحديث</button>
+</div>
 
 <table border="1" width="100%">
 
@@ -243,7 +251,14 @@ style="margin-bottom:10px;width:200px;padding:5px;"
 
 <h3>🧾 كل الفواتير</h3>
 
-<button onclick="loadInvoices()">📄 عرض الفواتير</button>
+<div style="margin:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+  <input type="date" id="invoicesFrom" style="padding:4px;border-radius:4px;border:1px solid #ccc;">
+  <span>إلى</span>
+  <input type="date" id="invoicesTo" style="padding:4px;border-radius:4px;border:1px solid #ccc;">
+  <button onclick="applyInvoicesFilter()">🔍 فلتر</button>
+  <button onclick="resetInvoicesFilter()">✖ إعادة تعيين</button>
+  <button onclick="loadInvoices(invoicesPage)">🔄 تحديث</button>
+</div>
 
 <table border="1" width="100%">
 
@@ -259,6 +274,12 @@ style="margin-bottom:10px;width:200px;padding:5px;"
 <tbody id="invoiceTable"></tbody>
 
 </table>
+
+<div style="margin:10px 0;display:flex;align-items:center;gap:10px;">
+  <button id="prevInvoicesPage" onclick="loadInvoices(invoicesPage - 1)" disabled>◀ السابق</button>
+  <span id="invoicesPageInfo" style="font-size:13px;color:#555;">صفحة 1</span>
+  <button id="nextInvoicesPage" onclick="loadInvoices(invoicesPage + 1)">التالي ▶</button>
+</div>
 
 <!-- ⚠️ المخزون المنخفض -->
 

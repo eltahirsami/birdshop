@@ -6,6 +6,12 @@ let editMode = false
 let editId = null
 let isCheckoutProcessing = false
 let salesHistoryPage = 1
+let salesHistorySearch = ''
+let salesHistoryFrom = ''
+let salesHistoryTo = ''
+let invoicesPage = 1
+let invoicesFrom = ''
+let invoicesTo = ''
 
 const INVOICE_STYLE = `
   body { font-family:tahoma; width:80mm; margin:0; padding:5px; }
@@ -451,15 +457,24 @@ function searchProducts() {
 async function loadSalesHistory(page) {
   page = (page && page >= 1) ? page : 1
   salesHistoryPage = page
-  const res = await fetch('/sales/history?page=' + page, { credentials: 'include' })
+
+  const params = new URLSearchParams({ page })
+  if (salesHistorySearch) params.set('q', salesHistorySearch)
+  if (salesHistoryFrom) params.set('from', salesHistoryFrom)
+  if (salesHistoryTo) params.set('to', salesHistoryTo)
+
+  const res = await fetch('/sales/history?' + params, { credentials: 'include' })
   const data = await res.json()
+  const rows = data.rows || []
+  const total = data.total || 0
+  const totalPages = Math.ceil(total / 50) || 1
 
   const adminTable = document.getElementById("salesHistoryTable")
   const cashierTable = document.getElementById("cashierSalesTable")
 
   const adminRows = () => {
-    if (!data || data.length === 0) return `<tr><td colspan="6" style="text-align:center">لا توجد مبيعات</td></tr>`
-    return data.map(s => `
+    if (!rows.length) return `<tr><td colspan="6" style="text-align:center">لا توجد مبيعات</td></tr>`
+    return rows.map(s => `
       <tr>
         <td>${s.product}</td>
         <td>${s.quantity}</td>
@@ -472,8 +487,8 @@ async function loadSalesHistory(page) {
   }
 
   const cashierRows = () => {
-    if (!data || data.length === 0) return `<tr><td colspan="4" style="text-align:center">لا توجد مبيعات</td></tr>`
-    return data.map(s => `
+    if (!rows.length) return `<tr><td colspan="4" style="text-align:center">لا توجد مبيعات</td></tr>`
+    return rows.map(s => `
       <tr>
         <td>${s.product}</td>
         <td>${s.quantity}</td>
@@ -489,9 +504,29 @@ async function loadSalesHistory(page) {
   const pageInfo = document.getElementById("historyPageInfo")
   const prevBtn = document.getElementById("prevHistoryPage")
   const nextBtn = document.getElementById("nextHistoryPage")
-  if (pageInfo) pageInfo.innerText = 'صفحة ' + page
+  if (pageInfo) pageInfo.innerText = `صفحة ${page} من ${totalPages} (${total} صف)`
   if (prevBtn) prevBtn.disabled = page <= 1
-  if (nextBtn) nextBtn.disabled = !data || data.length < 50
+  if (nextBtn) nextBtn.disabled = page >= totalPages
+}
+
+function applyHistoryFilter() {
+  salesHistorySearch = (document.getElementById('historySearch')?.value || '').trim()
+  salesHistoryFrom = document.getElementById('historyFrom')?.value || ''
+  salesHistoryTo = document.getElementById('historyTo')?.value || ''
+  loadSalesHistory(1)
+}
+
+function resetHistoryFilter() {
+  salesHistorySearch = ''
+  salesHistoryFrom = ''
+  salesHistoryTo = ''
+  const s = document.getElementById('historySearch')
+  const f = document.getElementById('historyFrom')
+  const t = document.getElementById('historyTo')
+  if (s) s.value = ''
+  if (f) f.value = ''
+  if (t) t.value = ''
+  loadSalesHistory(1)
 }
 
 async function clearSalesHistory() {
@@ -519,16 +554,26 @@ async function clearSalesHistory() {
 /* =========================
 الفواتير
 ========================= */
-async function loadInvoices() {
-  const res = await fetch('/sales/invoices', { credentials: 'include' })
+async function loadInvoices(page) {
+  page = (page && page >= 1) ? page : 1
+  invoicesPage = page
+
+  const params = new URLSearchParams({ page })
+  if (invoicesFrom) params.set('from', invoicesFrom)
+  if (invoicesTo) params.set('to', invoicesTo)
+
+  const res = await fetch('/sales/invoices?' + params, { credentials: 'include' })
   const data = await res.json()
+  const rows = data.rows || []
+  const total = data.total || 0
+  const totalPages = Math.ceil(total / 50) || 1
 
   const adminTable = document.getElementById("invoiceTable")
   const cashierTable = document.getElementById("cashierInvoiceTable")
 
   const buildRows = () => {
-    if (!data || data.length === 0) return `<tr><td colspan="4" style="text-align:center">لا توجد فواتير</td></tr>`
-    return data.map(inv => `
+    if (!rows.length) return `<tr><td colspan="4" style="text-align:center">لا توجد فواتير</td></tr>`
+    return rows.map(inv => `
       <tr>
         <td>${inv.invoice_number}</td>
         <td>${new Date(inv.created_at).toLocaleString('ar')}</td>
@@ -543,6 +588,29 @@ async function loadInvoices() {
 
   if (adminTable) adminTable.innerHTML = buildRows()
   if (cashierTable) cashierTable.innerHTML = buildRows()
+
+  const pageInfo = document.getElementById("invoicesPageInfo")
+  const prevBtn = document.getElementById("prevInvoicesPage")
+  const nextBtn = document.getElementById("nextInvoicesPage")
+  if (pageInfo) pageInfo.innerText = `صفحة ${page} من ${totalPages} (${total} فاتورة)`
+  if (prevBtn) prevBtn.disabled = page <= 1
+  if (nextBtn) nextBtn.disabled = page >= totalPages
+}
+
+function applyInvoicesFilter() {
+  invoicesFrom = document.getElementById('invoicesFrom')?.value || ''
+  invoicesTo = document.getElementById('invoicesTo')?.value || ''
+  loadInvoices(1)
+}
+
+function resetInvoicesFilter() {
+  invoicesFrom = ''
+  invoicesTo = ''
+  const f = document.getElementById('invoicesFrom')
+  const t = document.getElementById('invoicesTo')
+  if (f) f.value = ''
+  if (t) t.value = ''
+  loadInvoices(1)
 }
 
 /* =========================
@@ -838,9 +906,9 @@ function openSuppliersWindow() {
 ========================= */
 async function exportWeeklyReport() {
   const res = await fetch('/sales/history', { credentials: 'include' })
-  const sales = await res.json()
+  const sales = (await res.json()).rows || []
   const resInvoices = await fetch('/sales/invoices', { credentials: 'include' })
-  const allInvoices = await resInvoices.json()
+  const allInvoices = (await resInvoices.json()).rows || []
   const resProducts = await fetch('/products', { credentials: 'include' })
   const products = await resProducts.json()
 
@@ -912,9 +980,9 @@ async function exportWeeklyReport() {
 ========================= */
 async function exportMonthlyReport() {
   const res = await fetch('/sales/history', { credentials: 'include' })
-  const sales = await res.json()
+  const sales = (await res.json()).rows || []
   const resInvoices = await fetch('/sales/invoices', { credentials: 'include' })
-  const allInvoices = await resInvoices.json()
+  const allInvoices = (await resInvoices.json()).rows || []
   const resProducts = await fetch('/products', { credentials: 'include' })
   const products = await resProducts.json()
 
@@ -987,11 +1055,11 @@ async function exportMonthlyReport() {
 ========================= */
 async function exportFullReport() {
   const resInvoices = await fetch('/sales/invoices', { credentials: 'include' })
-  const invoices = await resInvoices.json()
+  const invoices = (await resInvoices.json()).rows || []
   const resProducts = await fetch('/products', { credentials: 'include' })
   const products = await resProducts.json()
   const resSales = await fetch('/sales/history', { credentials: 'include' })
-  const sales = await resSales.json()
+  const sales = (await resSales.json()).rows || []
 
   let totalRevenue = 0, totalProfit = 0, totalItems = 0
   let productStats = {}, monthlyStats = {}
@@ -1147,12 +1215,12 @@ async function printDailyReport() {
   const profit = await resProfit.json()
 
   const resHistory = await fetch('/sales/history', { credentials: 'include' })
-  const allSales = await resHistory.json()
+  const allSales = (await resHistory.json()).rows || []
 
   const todaySales = allSales.filter(s => s.created_at.slice(0, 10) === today)
 
   const resInvoices = await fetch('/sales/invoices', { credentials: 'include' })
-  const allInvoices = await resInvoices.json()
+  const allInvoices = (await resInvoices.json()).rows || []
   const todayInvoices = allInvoices.filter(inv => inv.created_at.slice(0, 10) === today)
 
   const date = new Date().toLocaleDateString('ar', {

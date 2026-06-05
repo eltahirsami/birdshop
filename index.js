@@ -367,15 +367,31 @@ app.get('/sales/history', requireLogin, requireCashier, (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = 50;
   const offset = (page - 1) * limit;
-  const sql = `
+  const q = (req.query.q || '').trim();
+  const from = req.query.from || '';
+  const to = req.query.to || '';
+
+  const conds = [];
+  const baseParams = [];
+  if (q) { conds.push("p.name LIKE ?"); baseParams.push('%' + q + '%'); }
+  if (from) { conds.push("date(s.created_at) >= ?"); baseParams.push(from); }
+  if (to) { conds.push("date(s.created_at) <= ?"); baseParams.push(to); }
+  const where = conds.length ? 'WHERE ' + conds.join(' AND ') : '';
+
+  const countSql = `SELECT COUNT(*) as total FROM sales s JOIN products p ON p.id=s.product_id ${where}`;
+  const rowsSql = `
     SELECT s.invoice_number, p.name product, s.quantity, s.total,
     p.cost_price, (s.total-(p.cost_price*s.quantity)) as profit, s.created_at
     FROM sales s JOIN products p ON p.id=s.product_id
+    ${where}
     ORDER BY s.created_at DESC LIMIT ? OFFSET ?
   `;
-  db.all(sql, [limit, offset], (err, rows) => {
-    if (err) return res.status(500).json(err);
-    res.json(rows);
+  db.get(countSql, baseParams, (err, countRow) => {
+    if (err) return res.status(500).json({ error: 'db error' });
+    db.all(rowsSql, [...baseParams, limit, offset], (err, rows) => {
+      if (err) return res.status(500).json({ error: 'db error' });
+      res.json({ rows, total: countRow.total });
+    });
   });
 });
 
@@ -412,10 +428,27 @@ app.get('/sales/month-invoices', requireLogin, requireCashier, (req, res) => {
 });
 
 app.get('/sales/invoices', requireLogin, requireCashier, (req, res) => {
-  const sql = "SELECT invoice_number, SUM(total) as total, MAX(created_at) as created_at FROM sales GROUP BY invoice_number ORDER BY invoice_number DESC";
-  db.all(sql, [], (err, rows) => {
-    if (err) { res.status(500).json({ error: "db error" }); return; }
-    res.json(rows);
+  const page = parseInt(req.query.page) || 1;
+  const limit = 50;
+  const offset = (page - 1) * limit;
+  const from = req.query.from || '';
+  const to = req.query.to || '';
+
+  const conds = [];
+  const baseParams = [];
+  if (from) { conds.push("date(created_at) >= ?"); baseParams.push(from); }
+  if (to) { conds.push("date(created_at) <= ?"); baseParams.push(to); }
+  const where = conds.length ? 'WHERE ' + conds.join(' AND ') : '';
+
+  const countSql = `SELECT COUNT(DISTINCT invoice_number) as total FROM sales ${where}`;
+  const rowsSql = `SELECT invoice_number, SUM(total) as total, MAX(created_at) as created_at FROM sales ${where} GROUP BY invoice_number ORDER BY invoice_number DESC LIMIT ? OFFSET ?`;
+
+  db.get(countSql, baseParams, (err, countRow) => {
+    if (err) { res.status(500).json({ error: 'db error' }); return; }
+    db.all(rowsSql, [...baseParams, limit, offset], (err, rows) => {
+      if (err) { res.status(500).json({ error: 'db error' }); return; }
+      res.json({ rows, total: countRow.total });
+    });
   });
 });
 

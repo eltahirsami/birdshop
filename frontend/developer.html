@@ -461,12 +461,14 @@ async function loadSystemInfo() {
   document.getElementById('statProducts').innerText = products.length
 
   const resInvoices = await fetch('/sales/invoices', { credentials: 'include' })
-  const invoices = await resInvoices.json()
+  const invoicesData = await resInvoices.json()
+  const invoices = invoicesData.rows || []
+  const invoicesTotal = invoicesData.total || 0
 
   const table = document.getElementById('systemTable')
   table.innerHTML =
     '<tr><td style="color:var(--text-dim)">عدد المنتجات</td><td style="color:var(--accent)">' + products.length + '</td></tr>' +
-    '<tr><td style="color:var(--text-dim)">عدد الفواتير</td><td style="color:var(--accent2)">' + invoices.length + '</td></tr>' +
+    '<tr><td style="color:var(--text-dim)">عدد الفواتير</td><td style="color:var(--accent2)">' + invoicesTotal + '</td></tr>' +
     '<tr><td style="color:var(--text-dim)">إجمالي المبيعات</td><td style="color:var(--accent2)">' + invoices.reduce(function(a,b){ return a+b.total }, 0) + '</td></tr>' +
     '<tr><td style="color:var(--text-dim)">حجم قاعدة البيانات</td><td style="color:var(--warning)">' + dbData.size + '</td></tr>' +
     '<tr><td style="color:var(--text-dim)">Node.js</td><td style="font-family:var(--mono);color:var(--accent)">v24+</td></tr>' +

@@ -1,54 +1,40 @@
 # Current Session
 
-**Date:** 2026-06-01
-**Status:** Feature #1 complete ✅
+**Date:** 2026-06-05
+**Status:** Features #3 & #4 complete ✅
 
 ## What was done this session
 
-### Bug fix pass (all 8 resolved — see COMPLETED.md)
+### Feature #3 — Sales history search/filter + Feature #4 — Invoice table pagination
 
-### Feature #2 — WhatsApp number from settings + low-stock threshold UI (done)
-
-### Feature #1 — Product Category Management
-
-**database.js:**
-- Added `categories` table (`id INTEGER PRIMARY KEY AUTOINCREMENT`, `name TEXT UNIQUE NOT NULL`)
-- Backfill: `INSERT OR IGNORE INTO categories (name) SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category != ''`
-
-**index.js:**
-- `GET /categories` — returns all categories ordered by name (requireLogin)
-- `POST /categories` — adds a new category; 409 if duplicate (requireCashier)
-- `DELETE /categories/:id` — deletes only if no products use that category (requireAdmin)
-
-**frontend/index.html:**
-- Replaced `<input type="text" id="category">` with `<select id="category">` + inline "add new" row (`#newCategoryInput` + ➕ button)
-- Added `#categoryMgmt` div with `#categoryTags` — visible to admin only, shows all categories with × delete buttons
+**backend/index.js:**
+- `/sales/history` — added `?q=` (product name LIKE search), `?from=`, `?to=` (date range); response changed from array to `{ rows, total }` so frontend knows total count for accurate pagination
+- `/sales/invoices` — added `?page=`, `?from=`, `?to=`; same `{ rows, total }` response shape
 
 **frontend/app.js:**
-- Added `let categories = []` to state
-- `loadCategories()` — fetches `/categories`, populates `categories`, then calls `renderCategorySelect()` + `renderCategoryTags()`
-- `renderCategorySelect()` — rebuilds `<select id="category">` options, preserves current selection
-- `renderCategoryTags()` — renders admin-only tag pills with delete buttons; hides `#categoryMgmt` for non-admins
-- `addCategory()` — POST to `/categories`, then reload + auto-selects the new category
-- `deleteCategory(id)` — DELETE to `/categories/:id`, then reload
-- `window.onload` now calls `await loadCategories()` after `loadProducts()`
+- Added state vars: `salesHistorySearch`, `salesHistoryFrom`, `salesHistoryTo`, `invoicesPage`, `invoicesFrom`, `invoicesTo`
+- `loadSalesHistory(page)` — builds URL with filter params, uses `data.rows`/`data.total`, shows "صفحة X من Y (N صف)", disables next btn when page >= totalPages
+- New `applyHistoryFilter()` — reads filter inputs → resets to page 1 → reloads
+- New `resetHistoryFilter()` — clears state and inputs → reloads
+- `loadInvoices(page)` — same pattern: filter params, `{ rows, total }`, pagination controls
+- New `applyInvoicesFilter()` / `resetInvoicesFilter()`
+- `exportWeeklyReport`, `exportMonthlyReport`, `exportFullReport`, `printDailyReport` — all updated to use `.rows || []` from the new response shape
 
-**frontend/admin.html:**
-- Replaced `<input type="text" id="editCategory">` with `<select id="editCategory">` + inline "add new" row (`#newCategoryAdmin` + ➕ button)
+**frontend/index.html:**
+- Sales history section: added filter row (text search + from/to date pickers + بحث/إعادة تعيين/تحديث buttons)
+- Invoices section: added filter row (from/to date pickers + فلتر/إعادة تعيين/تحديث buttons) + pagination controls (prevInvoicesPage / invoicesPageInfo / nextInvoicesPage)
 
-**frontend/admin.js:**
-- Added `let categories = []`
-- `loadCategories()` — fetches `/categories`, calls `renderCategoryDropdown()`
-- `renderCategoryDropdown(selectedName)` — rebuilds `<select id="editCategory">` options
-- `addCategoryAdmin()` — POST to `/categories`, reloads, auto-selects new category
-- `editProduct(id)` — now calls `renderCategoryDropdown(p.category)` instead of `sel.value = p.category`
-- Init: `loadCategories()` called before `loadProducts()`
+**frontend/developer.html:**
+- Updated `/sales/invoices` call to use `invoicesData.rows` and `invoicesData.total`
 
 ## State at end of session
 
-- Feature #1 ✅, Feature #2 ✅
-- Feature #3 (sales history search/filter) NOT started — awaiting approval
+- Feature #1 ✅ (category management)
+- Feature #2 ✅ (WhatsApp number from settings)
+- Feature #3 ✅ (sales history search/filter)
+- Feature #4 ✅ (invoice table pagination)
+- All 8 original bugs resolved
 
 ## Next session should
 
-Wait for user to approve Feature #3 (sales history search/filter) before starting it.
+All TODO items are now done. Wait for new user requests.
