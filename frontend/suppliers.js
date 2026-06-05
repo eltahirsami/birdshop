@@ -428,6 +428,7 @@ function addItemToDraft() {
 async function savePurchase() {
   if (!selectedSupplierId) { setMsg('purchaseMsg', 'اختر مورد أولاً', false); return }
   if (draftItems.length === 0) { setMsg('purchaseMsg', 'أضف بنود الفاتورة أولاً', false); return }
+  if (!confirm('هل أنت متأكد من حفظ الفاتورة؟')) return
 
   const invoice_number = (document.getElementById('purchaseInvoiceNo').value || '').trim()
   const invoice_date = (document.getElementById('purchaseInvoiceDate').value || '').trim()
@@ -470,6 +471,11 @@ async function createPayment() {
   const method = (document.getElementById('payMethod').value || '').trim()
   const notes = (document.getElementById('payNotes').value || '').trim()
   if (!Number.isFinite(amount) || amount <= 0) { setMsg('paymentMsg', 'أدخل مبلغ صحيح', false); return }
+  const remaining = parseFloat(document.getElementById('payRemaining')?.value || '0')
+  if (amount > remaining) {
+    setMsg('paymentMsg', `المبلغ يتجاوز الرصيد المتبقي للمورد (${money(remaining)})`, false)
+    return
+  }
 
   try {
     await fetchJson('/suppliers/payments', {
