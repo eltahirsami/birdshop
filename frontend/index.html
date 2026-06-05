@@ -346,60 +346,6 @@ onkeypress="if(event.key==='Enter'){searchInvoice()}"
 
 </div>
 
-<hr style="margin:16px 0">
-
-<h3>📊 سجل المبيعات</h3>
-
-<div style="margin:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-  <button onclick="loadSalesHistory(salesHistoryPage)">🔄 تحديث</button>
-</div>
-
-<table border="1" width="100%">
-<thead>
-<tr>
-<th>المنتج</th>
-<th>الكمية</th>
-<th>سعر البيع</th>
-<th>التاريخ</th>
-</tr>
-</thead>
-<tbody id="cashierSalesTable"></tbody>
-</table>
-
-<div style="margin:8px 0;display:flex;align-items:center;gap:10px;">
-  <button id="prevHistoryPageCashier" onclick="loadSalesHistory(salesHistoryPage - 1)" disabled>◀ السابق</button>
-  <span id="historyPageInfoCashier" style="font-size:13px;color:#555;">صفحة 1</span>
-  <button id="nextHistoryPageCashier" onclick="loadSalesHistory(salesHistoryPage + 1)">التالي ▶</button>
-</div>
-
-<hr style="margin:16px 0">
-
-<h3>🧾 الفواتير</h3>
-
-<div style="margin:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-  <input type="text" id="invoicesSearchCashier" placeholder="🔍 رقم الفاتورة" style="padding:4px 8px;border-radius:4px;border:1px solid #ccc;width:130px;" onkeydown="if(event.key==='Enter') applyInvoicesFilterCashier()">
-  <button onclick="applyInvoicesFilterCashier()">🔍 بحث</button>
-  <button onclick="resetInvoicesFilterCashier()">✖ إعادة تعيين</button>
-  <button onclick="loadInvoices(invoicesPage)">🔄 تحديث</button>
-</div>
-
-<table border="1" width="100%">
-<thead>
-<tr>
-<th>رقم الفاتورة</th>
-<th>التاريخ</th>
-<th>الإجمالي</th>
-<th>طباعة</th>
-</tr>
-</thead>
-<tbody id="cashierInvoiceTable"></tbody>
-</table>
-
-<div style="margin:8px 0;display:flex;align-items:center;gap:10px;">
-  <button id="prevInvoicesPageCashier" onclick="loadInvoices(invoicesPage - 1)" disabled>◀ السابق</button>
-  <span id="invoicesPageInfoCashier" style="font-size:13px;color:#555;">صفحة 1</span>
-  <button id="nextInvoicesPageCashier" onclick="loadInvoices(invoicesPage + 1)">التالي ▶</button>
-</div>
 
 </div>
 
