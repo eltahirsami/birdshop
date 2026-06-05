@@ -359,24 +359,44 @@ async function loadPayments() {
 async function viewPurchase(purchaseId) {
   try {
     const data = await fetchJson(`/suppliers/purchases/${purchaseId}`)
-    document.getElementById('purchaseDetailsTitle').innerText =
-      `فاتورة: ${data.purchase.invoice_number || data.purchase.id} — الإجمالي: ${money(data.purchase.total)}`
+    const p = data.purchase
+    const supplierName = suppliers.find(s => s.id === p.supplier_id)?.name || ''
 
-    const body = document.getElementById('purchaseDetailsBody')
-    body.innerHTML = ''
-    data.items.forEach(it => {
-      const tr = document.createElement('tr')
-      tr.innerHTML = `
-        <td>${it.product_name}</td>
-        <td>${it.quantity}</td>
-        <td>${money(it.unit_cost)}</td>
-        <td>${money(it.total)}</td>
-      `
-      body.appendChild(tr)
-    })
+    let total = 0
+    const rows = data.items.map(it => {
+      total += it.total
+      return `<tr><td>${it.product_name}</td><td>${it.quantity}</td><td>${money(it.unit_cost)}</td><td>${money(it.total)}</td></tr>`
+    }).join('')
+
+    const html = `
+      <html dir="rtl">
+        <head><title>فاتورة مورد</title><style>${PRINT_STYLE}</style></head>
+        <body>
+          <div class="header">
+            <p class="title">فاتورة مورد</p>
+            ${supplierName ? `<div class="sub">المورد: ${supplierName}</div>` : ''}
+            <div class="sub">رقم الفاتورة: ${p.invoice_number || p.id}</div>
+            ${p.invoice_date ? `<div class="sub">تاريخ الفاتورة: ${p.invoice_date}</div>` : ''}
+            <div class="sub">تاريخ الإدخال: ${p.created_at ? new Date(p.created_at).toLocaleString('ar') : ''}</div>
+            ${p.notes ? `<div class="sub">ملاحظات: ${p.notes}</div>` : ''}
+          </div>
+          <table>
+            <tr><th>المنتج</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th></tr>
+            ${rows}
+          </table>
+          <div class="tot">الإجمالي: ${money(total)}</div>
+          <div class="footer">حسابات الموردين</div>
+          <div style="text-align:center;margin-top:10px;">
+            <button onclick="window.print()" style="padding:6px 12px;border:none;border-radius:8px;background:#2980b9;color:#fff;font-family:tahoma;cursor:pointer">طباعة</button>
+          </div>
+        </body>
+      </html>
+    `
+    const win = window.open('', '', 'width=450,height=700')
+    win.document.write(html)
+    win.document.close()
   } catch (e) {
-    document.getElementById('purchaseDetailsTitle').innerText = e.message
-    document.getElementById('purchaseDetailsBody').innerHTML = ''
+    alert(e.message)
   }
 }
 
