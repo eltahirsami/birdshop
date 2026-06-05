@@ -5,6 +5,7 @@ let draftItems = []
 let lastPurchases = []
 let allPurchasesMode = false
 let allPurchasesPage = 1
+let allPurchasesTotalPages = 1
 const ALL_PURCHASES_LIMIT = 50
 
 function money(x) {
@@ -263,6 +264,8 @@ async function loadAllPurchases(page) {
   try {
     allPurchasesMode = true
     allPurchasesPage = page || 1
+    lastPurchases = []
+    renderPayPurchaseSelect()
     const q = (document.getElementById('allPurchasesSearch')?.value || '').trim()
     const data = await fetchJson(`/suppliers/purchases?page=${allPurchasesPage}&limit=${ALL_PURCHASES_LIMIT}&q=${encodeURIComponent(q)}`)
     const rows = data.rows || []
@@ -286,9 +289,9 @@ async function loadAllPurchases(page) {
       `
       body.appendChild(tr)
     })
-    const totalPages = Math.max(Math.ceil((data.totalCount || 0) / ALL_PURCHASES_LIMIT), 1)
+    allPurchasesTotalPages = Math.max(Math.ceil((data.totalCount || 0) / ALL_PURCHASES_LIMIT), 1)
     const info = document.getElementById('allPurchasesPageInfo')
-    if (info) info.innerText = `صفحة ${data.page} من ${totalPages} — إجمالي ${data.totalCount} فاتورة`
+    if (info) info.innerText = `صفحة ${data.page} من ${allPurchasesTotalPages} — إجمالي ${data.totalCount} فاتورة`
     setMsg('purchasesMsg', 'تم عرض كل فواتير الموردين', true)
   } catch (e) {
     setMsg('purchasesMsg', e.message, false)
@@ -308,6 +311,7 @@ function prevAllPurchasesPage() {
 
 function nextAllPurchasesPage() {
   if (!allPurchasesMode) return
+  if (allPurchasesPage >= allPurchasesTotalPages) return
   loadAllPurchases(allPurchasesPage + 1)
 }
 
@@ -405,8 +409,12 @@ function addItemToDraft() {
   const pid = parseInt(document.getElementById('productSelect').value, 10)
   const qty = parseInt(document.getElementById('itemQty').value, 10)
   const unitCost = parseFloat(document.getElementById('itemUnitCost').value)
-  if (!pid || !qty || qty < 1 || !Number.isFinite(unitCost) || unitCost < 0) {
+  if (!pid || !qty || qty < 1 || !Number.isFinite(unitCost) || unitCost <= 0) {
     setMsg('purchaseMsg', 'أدخل منتج + كمية + سعر شراء صحيح', false)
+    return
+  }
+  if (draftItems.some(it => it.product_id === pid)) {
+    setMsg('purchaseMsg', 'هذا المنتج موجود بالفعل في الفاتورة', false)
     return
   }
   const p = products.find(x => x.id === pid)
