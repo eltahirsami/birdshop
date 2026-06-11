@@ -890,6 +890,16 @@ app.get('/developer/logs', requireDeveloper, (req, res) => {
   });
 });
 
+app.get('/settings', requireLogin, (req, res) => {
+  const keys = ['shop_name', 'invoice_title', 'shop_phone'];
+  db.all("SELECT key, value FROM settings WHERE key IN ('shop_name','invoice_title','shop_phone')", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'db error' });
+    const obj = {};
+    rows.forEach(r => { obj[r.key] = r.value; });
+    res.json(obj);
+  });
+});
+
 app.get('/developer/settings', requireDeveloper, (req, res) => {
   db.all("SELECT key, value FROM settings", [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'db error' });

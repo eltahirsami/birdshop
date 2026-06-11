@@ -37,7 +37,7 @@ function buildShopHeader() {
 
 async function loadAppSettings() {
   try {
-    const res = await fetch('/developer/settings', { credentials: 'include' })
+    const res = await fetch('/settings', { credentials: 'include' })
     if (!res.ok) return
     const data = await res.json()
     if (data.invoice_title) settingsInvoiceTitle = data.invoice_title

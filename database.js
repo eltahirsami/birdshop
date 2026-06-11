@@ -144,6 +144,8 @@ db.serialize(() => {
   `);
 
   db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('shop_name', 'Smart POS System')");
+  db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('invoice_title', 'Smart POS System')");
+  db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('shop_phone', '')");
   db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('whatsapp_number', '')");
   db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('low_stock_threshold', '5')");
 
