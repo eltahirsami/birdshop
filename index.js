@@ -928,7 +928,7 @@ app.get('/whatsapp/status', requireLogin, (req, res) => {
   res.json(getWhatsAppStatus())
 })
 
-app.get('/whatsapp/qr', requireDeveloper, async (req, res) => {
+app.get('/whatsapp/qr', requireLogin, async (req, res) => {
   const qrString = getCurrentQr()
   if (!qrString) return res.json({ qr: null })
   try {
