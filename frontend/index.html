@@ -366,6 +366,17 @@ onkeypress="if(event.key==='Enter'){searchInvoice()}"
 
 </div>
 
+<!-- ================= WhatsApp QR Section ================= -->
+<div id="waSection" style="margin:20px 0;padding:16px;border:1px solid #ddd;border-radius:8px;text-align:center;background:#f8f9fa;">
+  <div id="waCheckingMsg" style="color:#888;font-size:14px;">جاري التحقق من واتساب...</div>
+  <div id="waConnectedMsg" style="display:none;color:#27ae60;font-size:16px;font-weight:bold;">واتساب متصل ✅</div>
+  <div id="waQrSection" style="display:none;">
+    <p style="font-weight:bold;margin-bottom:10px;">📱 امسح رمز QR لربط واتساب</p>
+    <img id="waMainQrImg" alt="QR Code" style="width:220px;height:220px;border-radius:8px;border:2px solid #ddd;background:#fff;display:block;margin:0 auto 8px;">
+    <p style="color:#888;font-size:12px;">يتجدد الكود تلقائياً كل 5 ثواني</p>
+  </div>
+</div>
+
 <script src="app.js?v=2"></script>
 
 </body>

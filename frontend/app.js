@@ -1254,14 +1254,37 @@ async function loadWhatsAppStatus() {
     const data = await res.json()
     const dot = document.getElementById('waDot')
     const label = document.getElementById('waLabel')
-    if (!dot || !label) return
-    if (data.connected) {
-      dot.style.background = '#00e676'
-      label.innerText = 'واتساب متصل'
-    } else {
-      dot.style.background = '#ff4757'
-      label.innerText = 'واتساب غير متصل'
+    if (dot && label) {
+      if (data.connected) {
+        dot.style.background = '#00e676'
+        label.innerText = 'واتساب متصل'
+      } else {
+        dot.style.background = '#ff4757'
+        label.innerText = 'واتساب غير متصل'
+      }
     }
+    const checkingMsg = document.getElementById('waCheckingMsg')
+    const connectedMsg = document.getElementById('waConnectedMsg')
+    const qrSection = document.getElementById('waQrSection')
+    if (checkingMsg) checkingMsg.style.display = 'none'
+    if (connectedMsg) connectedMsg.style.display = data.connected ? 'block' : 'none'
+    if (qrSection) {
+      if (!data.connected && data.hasQr) {
+        qrSection.style.display = 'block'
+        await loadMainPageQr()
+      } else {
+        qrSection.style.display = 'none'
+      }
+    }
+  } catch (e) {}
+}
+
+async function loadMainPageQr() {
+  try {
+    const res = await fetch('/whatsapp/qr', { credentials: 'include' })
+    const data = await res.json()
+    const img = document.getElementById('waMainQrImg')
+    if (data.qr && img) img.src = data.qr
   } catch (e) {}
 }
 
@@ -1293,7 +1316,7 @@ window.onload = async () => {
   loadTodayStats()
   loadMonthProfit()
   loadWhatsAppStatus()
-  setInterval(loadWhatsAppStatus, 30000)
+  setInterval(loadWhatsAppStatus, 5000)
 
   if (userRole === "admin" || userRole === "cashier") {
     loadSalesHistory()
