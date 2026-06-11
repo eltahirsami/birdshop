@@ -4,41 +4,73 @@
 <meta charset="UTF-8">
 <title>تفعيل البرنامج - 🧾 Smart POS System</title>
 <style>
-  body { background:#0a0e1a; color:#e2e8f0; font-family:Tahoma; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
-  .box { background:#111827; border:1px solid #1e3a5f; border-radius:16px; padding:40px; width:400px; text-align:center; }
+  body { background:#0a0e1a; color:#e2e8f0; font-family:Tahoma; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
+  .box { background:#111827; border:1px solid #1e3a5f; border-radius:16px; padding:40px; width:460px; text-align:center; }
   h1 { color:#00d4ff; font-size:22px; margin-bottom:8px; }
-  .machine-id { background:#0a0e1a; border:1px solid #1e3a5f; border-radius:8px; padding:12px; font-family:monospace; color:#00ff88; font-size:16px; letter-spacing:2px; margin:20px 0; }
-  input { width:100%; padding:12px; background:#0a0e1a; border:1px solid #1e3a5f; border-radius:8px; color:#e2e8f0; font-size:15px; text-align:center; letter-spacing:2px; box-sizing:border-box; margin-bottom:12px; outline:none; }
+  .status-msg { font-size:14px; margin-bottom:16px; padding:12px; border-radius:8px; }
+  .status-msg.expired  { background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.3); color:#ff4757; }
+  .status-msg.mismatch { background:rgba(255,165,2,0.1); border:1px solid rgba(255,165,2,0.3); color:#ffa502; }
+  .status-msg.default  { background:rgba(100,116,139,0.15); border:1px solid rgba(100,116,139,0.3); color:#94a3b8; }
+  .expiry-info { font-size:12px; color:#ff4757; margin-bottom:12px; }
+  .machine-id { background:#0a0e1a; border:1px solid #1e3a5f; border-radius:8px; padding:12px; font-family:monospace; color:#00ff88; font-size:14px; letter-spacing:1px; margin:16px 0; word-break:break-all; }
+  .label { font-size:12px; color:#64748b; margin-bottom:6px; display:block; }
+  input { width:100%; padding:12px; background:#0a0e1a; border:1px solid #1e3a5f; border-radius:8px; color:#e2e8f0; font-size:13px; text-align:center; box-sizing:border-box; margin-bottom:12px; outline:none; font-family:monospace; word-break:break-all; }
   input:focus { border-color:#00d4ff; }
   button { width:100%; padding:12px; background:linear-gradient(135deg,#0099cc,#00d4ff); color:#000; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer; font-family:Tahoma; }
+  .btn-copy { background:#1a2235; color:#00d4ff; border:1px solid #1e3a5f; margin-bottom:16px; }
   .msg { margin-top:12px; font-size:13px; padding:10px; border-radius:6px; display:none; }
   .msg.success { background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.3); color:#00ff88; display:block; }
-  .msg.error { background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.3); color:#ff4757; display:block; }
-  p { color:#64748b; font-size:13px; margin-bottom:16px; }
+  .msg.error   { background:rgba(255,71,87,0.1);  border:1px solid rgba(255,71,87,0.3);  color:#ff4757;  display:block; }
+  hr { border:none; border-top:1px solid #1e3a5f; margin:20px 0; }
 </style>
 </head>
 <body>
 <div class="box">
   <h1>🧾 SMART POS SYSTEM</h1>
-  <p>البرنامج غير مفعّل — أرسل رقم الجهاز للمبرمج للحصول على كود التفعيل</p>
 
+  <div class="status-msg default" id="statusMsg">جاري التحقق من حالة الترخيص...</div>
+  <div class="expiry-info" id="expiryInfo" style="display:none;"></div>
+
+  <hr>
+
+  <span class="label">رقم الجهاز (أرسله للمبرمج)</span>
   <div class="machine-id" id="machineId">جاري التحميل...</div>
+  <button class="btn-copy" onclick="copyId()">📋 نسخ رقم الجهاز</button>
 
-  <button onclick="copyId()" style="background:#1a2235;color:#00d4ff;border:1px solid #1e3a5f;margin-bottom:16px;">📋 نسخ رقم الجهاز</button>
-
-  <input id="licenseKey" placeholder="XXXXXX-XXXXXX-XXXXXX-XXXXXX" maxlength="27">
+  <span class="label">أدخل كود التفعيل</span>
+  <input id="licenseKey" placeholder="الصق كود التفعيل هنا">
   <button onclick="activate()">✅ تفعيل البرنامج</button>
 
   <div class="msg" id="msg"></div>
 </div>
 
 <script>
+const REASON_MESSAGES = {
+  expired:         { cls: 'expired',  text: '⏰ انتهت صلاحية اشتراكك — تواصل مع المبرمج لتجديد الاشتراك' },
+  machine_mismatch:{ cls: 'mismatch', text: '⚠️ هذا الترخيص مرتبط بجهاز مختلف — تواصل مع المبرمج' },
+  not_licensed:    { cls: 'default',  text: '🔒 البرنامج غير مفعّل — أرسل رقم الجهاز للمبرمج للحصول على كود التفعيل' }
+}
+
 async function loadMachineId() {
   const res = await fetch('/license/status')
   const data = await res.json()
   document.getElementById('machineId').innerText = data.machineId
+
   if (data.licensed) {
     location.href = '/'
+    return
+  }
+
+  const urlReason = new URLSearchParams(location.search).get('reason') || data.status || 'not_licensed'
+  const info = REASON_MESSAGES[urlReason] || REASON_MESSAGES.not_licensed
+  const msgEl = document.getElementById('statusMsg')
+  msgEl.className = 'status-msg ' + info.cls
+  msgEl.innerText = info.text
+
+  if (urlReason === 'expired' && data.expiry) {
+    const el = document.getElementById('expiryInfo')
+    el.innerText = 'تاريخ انتهاء الاشتراك: ' + data.expiry
+    el.style.display = 'block'
   }
 }
 
@@ -49,9 +81,8 @@ function copyId() {
 }
 
 async function activate() {
-  const key = document.getElementById('licenseKey').value
+  const key = document.getElementById('licenseKey').value.trim()
   const msg = document.getElementById('msg')
-
   if (!key) { msg.className = 'msg error'; msg.innerText = 'أدخل كود التفعيل'; return }
 
   const res = await fetch('/license/activate', {
@@ -63,11 +94,11 @@ async function activate() {
 
   if (data.success) {
     msg.className = 'msg success'
-    msg.innerText = '✅ تم التفعيل بنجاح — جاري الانتقال...'
-    setTimeout(() => location.href = '/login.html', 2000)
+    msg.innerText = '✅ تم التفعيل بنجاح — صالح حتى ' + (data.expiry || '') + ' — جاري الانتقال...'
+    setTimeout(() => location.href = '/login.html', 2500)
   } else {
     msg.className = 'msg error'
-    msg.innerText = '❌ كود غير صحيح — تأكد من الكود وحاول مجدداً'
+    msg.innerText = '❌ ' + (data.message || 'كود غير صحيح')
   }
 }
 

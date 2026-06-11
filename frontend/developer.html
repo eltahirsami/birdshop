@@ -190,6 +190,30 @@
   </div>
 
   <div class="card" style="margin-bottom:20px;">
+    <div class="card-header"><span class="card-title">🔑 معلومات الترخيص</span></div>
+    <div class="card-body">
+      <div id="alertLicense" class="alert"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <span class="label">// رقم الجهاز</span>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:var(--mono);color:#00ff88;font-size:13px;word-break:break-all;margin-bottom:10px;" id="licMachineId">جاري التحميل...</div>
+          <span class="label">// حالة الترخيص</span>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:10px;" id="licStatus">جاري التحميل...</div>
+          <span class="label">// تاريخ الانتهاء</span>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:var(--mono);color:var(--accent);margin-bottom:10px;" id="licExpiry">—</div>
+          <span class="label">// الأيام المتبقية</span>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:18px;font-weight:bold;" id="licDays">—</div>
+        </div>
+        <div>
+          <span class="label">// تجديد الاشتراك — أدخل كود الترخيص الجديد</span>
+          <textarea class="input" id="newLicenseKey" rows="4" placeholder="الصق كود الترخيص هنا" style="resize:vertical;font-family:var(--mono);font-size:12px;"></textarea>
+          <button class="btn btn-primary" onclick="activateLicense()">✅ تفعيل / تجديد الترخيص</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;">
     <div class="card-header">
       <span class="card-title">📋 سجل الأحداث</span>
       <div style="display:flex;gap:8px;">
@@ -251,6 +275,7 @@ window.onload = async () => {
   loadSystemInfo()
   loadLogs()
   loadSettings()
+  loadLicenseInfo()
   setInterval(loadLogs, 60000)
 }
 
@@ -567,6 +592,48 @@ function exportLogs() {
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'سجل الأحداث')
   XLSX.writeFile(wb, 'سجل-الأحداث-' + new Date().toLocaleDateString('ar') + '.xlsx')
+}
+
+async function loadLicenseInfo() {
+  const res = await fetch('/license/status')
+  const data = await res.json()
+  document.getElementById('licMachineId').innerText = data.machineId || '—'
+
+  const statusMap = {
+    active:           { text: '✅ نشط', color: '#00ff88' },
+    expired:          { text: '❌ منتهي الصلاحية', color: '#ff4757' },
+    machine_mismatch: { text: '⚠️ جهاز غير متطابق', color: '#ffa502' },
+    not_licensed:     { text: '🔒 غير مفعّل', color: '#64748b' }
+  }
+  const s = statusMap[data.status] || statusMap.not_licensed
+  document.getElementById('licStatus').innerHTML = `<span style="color:${s.color};font-weight:bold">${s.text}</span>`
+  document.getElementById('licExpiry').innerText = data.expiry || '—'
+
+  const daysEl = document.getElementById('licDays')
+  if (data.daysRemaining !== null && data.daysRemaining !== undefined) {
+    const color = data.daysRemaining <= 7 ? '#ff4757' : data.daysRemaining <= 30 ? '#ffa502' : '#00ff88'
+    daysEl.innerHTML = `<span style="color:${color}">${data.daysRemaining} يوم</span>`
+  } else {
+    daysEl.innerText = '—'
+  }
+}
+
+async function activateLicense() {
+  const key = document.getElementById('newLicenseKey').value.trim()
+  if (!key) { showAlert('alertLicense', 'أدخل كود الترخيص', 'danger'); return }
+  const res = await fetch('/license/activate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key })
+  })
+  const data = await res.json()
+  if (res.ok && data.success) {
+    showAlert('alertLicense', '✅ تم التفعيل بنجاح — صالح حتى ' + (data.expiry || ''), 'success')
+    document.getElementById('newLicenseKey').value = ''
+    loadLicenseInfo()
+  } else {
+    showAlert('alertLicense', data.message || 'كود غير صحيح', 'danger')
+  }
 }
 
 async function logout() {

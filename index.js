@@ -1,5 +1,5 @@
 require('dotenv').config({ path: require('path').join(__dirname, '.env') })
-const { getMachineId, isLicensed, saveLicense } = require('./license')
+const { getMachineId, isLicensed, getLicenseStatus, saveLicense } = require('./license')
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -28,22 +28,41 @@ app.use(express.json());
 
 // License check
 app.get('/license/status', (req, res) => {
+  const status = getLicenseStatus()
   res.json({
-    licensed: isLicensed(),
-    machineId: getMachineId()
+    machineId: getMachineId(),
+    licensed: status.valid,
+    status: status.reason,
+    expiry: status.expiry,
+    daysRemaining: status.daysRemaining
   })
 })
 
 app.post('/license/activate', (req, res) => {
   const { key } = req.body
-  const { generateLicenseKey } = require('./license')
-  const machineId = getMachineId()
-  const validKey = generateLicenseKey(machineId)
-  if (key.trim().toUpperCase() === validKey) {
+  if (!key) return res.status(400).json({ success: false, message: 'أدخل كود التفعيل' })
+  const crypto = require('crypto')
+  const currentMachineId = getMachineId()
+  try {
+    const parsed = JSON.parse(Buffer.from(key.trim(), 'base64').toString('utf8'))
+    const { machineId, expiry, sig } = parsed
+    const expectedSig = crypto.createHmac('sha256', process.env.LICENSE_SECRET || 'SKYBIRD2026SECRET')
+      .update(machineId + '|' + expiry)
+      .digest('hex')
+      .slice(0, 32)
+    if (sig !== expectedSig) {
+      return res.status(400).json({ success: false, message: 'كود غير صحيح' })
+    }
+    if (machineId !== currentMachineId) {
+      return res.status(400).json({ success: false, message: 'هذا الكود مخصص لجهاز آخر' })
+    }
+    if (new Date(expiry + 'T23:59:59') < new Date()) {
+      return res.status(400).json({ success: false, message: 'هذا الكود منتهي الصلاحية' })
+    }
     saveLicense(key)
-    res.json({ success: true, message: 'تم التفعيل بنجاح' })
-  } else {
-    res.status(400).json({ success: false, message: 'كود غير صحيح' })
+    res.json({ success: true, message: 'تم التفعيل بنجاح', expiry })
+  } catch {
+    return res.status(400).json({ success: false, message: 'كود غير صحيح' })
   }
 })
 app.use(express.urlencoded({ extended: true }));
@@ -112,8 +131,9 @@ function logAction(userId, username, action, details) {
 app.use((req, res, next) => {
   const publicPaths = ['/license.html', '/license/status', '/license/activate', '/login.html', '/style.css']
   const isPublic = publicPaths.some(p => req.path.startsWith(p))
-  if (!isPublic && !isLicensed()) {
-    return res.redirect('/license.html')
+  if (!isPublic) {
+    const ls = getLicenseStatus()
+    if (!ls.valid) return res.redirect('/license.html?reason=' + ls.reason)
   }
   next()
 })
@@ -126,9 +146,8 @@ app.use('/app', requireLogin, express.static(path.join(__dirname, 'frontend')));
    الصفحة الرئيسية
 ========================= */
 app.get('/', (req, res) => {
-  if (!isLicensed()) {
-    return res.redirect('/license.html')
-  }
+  const ls = getLicenseStatus()
+  if (!ls.valid) return res.redirect('/license.html?reason=' + ls.reason)
   res.redirect('/app')
 })
 
