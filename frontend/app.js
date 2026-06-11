@@ -26,11 +26,29 @@ const INVOICE_STYLE = `
   .footer { text-align:center; font-size:10px; color:#777; margin-top:10px; border-top:1px dashed #000; padding-top:5px; }
 `
 
-const SHOP_HEADER_HTML = `
-  <div class="shop-header">
-    <div class="shop-name">🧾 Smart POS System</div>
-  </div>
-`
+let settingsInvoiceTitle = ''
+let settingsShopPhone = ''
+
+function buildShopHeader() {
+  const title = settingsInvoiceTitle || '🧾 Smart POS System'
+  const phone = settingsShopPhone ? `<div class="shop-info">${settingsShopPhone}</div>` : ''
+  return `<div class="shop-header"><div class="shop-name">${title}</div>${phone}</div>`
+}
+
+async function loadAppSettings() {
+  try {
+    const res = await fetch('/developer/settings', { credentials: 'include' })
+    if (!res.ok) return
+    const data = await res.json()
+    if (data.invoice_title) settingsInvoiceTitle = data.invoice_title
+    if (data.shop_phone) settingsShopPhone = data.shop_phone
+    if (data.shop_name) {
+      document.title = '🧾 ' + data.shop_name
+      const h1 = document.getElementById('mainTitle')
+      if (h1) h1.innerText = '🧾 ' + data.shop_name
+    }
+  } catch (e) {}
+}
 
 /* =========================
 التصنيفات
@@ -732,7 +750,7 @@ function printInvoice(items, invoiceNumber) {
   const html = `
     <html dir="rtl"><head><title>فاتورة</title><style>${INVOICE_STYLE}</style></head>
     <body>
-      ${SHOP_HEADER_HTML}
+      ${buildShopHeader()}
       <h2>فاتورة بيع</h2>
       <p>رقم الفاتورة : ${invoiceNumber}</p>
       <p>التاريخ : ${date}</p>
@@ -772,9 +790,7 @@ async function searchInvoice() {
   })
 
   const invoiceHtml = `
-    <div style="text-align:center; border-bottom:2px dashed #000; padding-bottom:8px; margin-bottom:8px;">
-      <div style="font-size:18px; font-weight:bold;">🧾 Smart POS System</div>
-    </div>
+    ${buildShopHeader()}
     <p>🧾 رقم الفاتورة: ${data.invoice_number}</p>
     <p>📅 تاريخ الفاتورة: ${new Date(data.date).toLocaleString()}</p>
     <table border="1" width="100%">
@@ -830,7 +846,7 @@ async function openInvoiceWindow(invoiceNumber) {
   const html = `
     <html dir="rtl"><head><title>فاتورة ${invoiceNumber}</title><style>${INVOICE_STYLE}</style></head>
     <body>
-      ${SHOP_HEADER_HTML}
+      ${buildShopHeader()}
       <h2>فاتورة بيع</h2>
       <p>🧾 رقم الفاتورة: ${invoiceNumber}</p>
       <p>📅 تاريخ الفاتورة: ${new Date(data.date).toLocaleString()}</p>
@@ -867,7 +883,7 @@ async function openInvoice(number) {
   const html = `
     <html dir="rtl"><head><title>فاتورة</title><style>${INVOICE_STYLE}</style></head>
     <body>
-      ${SHOP_HEADER_HTML}
+      ${buildShopHeader()}
       <h2>فاتورة بيع</h2>
       <p>رقم الفاتورة : ${data.invoice_number}</p>
       <p>التاريخ : ${new Date(data.date).toLocaleString()}</p>
@@ -1234,6 +1250,7 @@ function showStockAlert(msg, type) {
 
 window.onload = async () => {
   await getUser()
+  await loadAppSettings()
   await loadProducts()
   await loadCategories()
 
@@ -1307,7 +1324,8 @@ async function printDailyReport() {
     </head>
     <body>
       <div class="header">
-        <div class="shop-name">🧾 Smart POS System</div>
+        <div class="shop-name">${settingsInvoiceTitle || '🧾 Smart POS System'}</div>
+        ${settingsShopPhone ? `<div class="shop-info">${settingsShopPhone}</div>` : ''}
       </div>
 
       <h2>📊 تقرير اليوم</h2>
