@@ -95,3 +95,19 @@
 - [x] **Suppliers Feature B** — Print supplier statement ("كشف حساب" button): fetches purchases, payments, and summary in parallel; merges into one chronological table sorted by `created_at` with columns التاريخ / البيان / مشتريات / مدفوع / الرصيد (running balance per row); header shows supplier name, phone, address; footer shows final remaining balance. 620×800 popup, `PRINT_STYLE` widened to 130mm. `suppliers.js`
   - `frontend/index.html`: added `cashierSalesTable` (4-col: product, qty, total, date) and `cashierInvoiceTable` (4-col: invoice#, date, total, print) inside `#cashierSection`, each with pagination controls using `*Cashier` IDs.
   - `frontend/app.js`: `loadSalesHistory` and `loadInvoices` now also update `historyPageInfoCashier`/`prevHistoryPageCashier`/`nextHistoryPageCashier` and invoice equivalents. Added `applyInvoicesFilterCashier()` and `resetInvoicesFilterCashier()` for cashier invoice search.
+
+## WhatsApp QR display (2026-06-11)
+
+- [x] **WA #1** — Developer panel QR fix: `await loadWaQr()`, null-guard on img, `console.error` in catch blocks, poll 10s → 5s. `frontend/developer.html`
+- [x] **WA #2** — Main page QR section: `#waSection` added at bottom of `index.html` outside all role divs (visible to admin + cashier). Three states: checking / connected / QR image. `frontend/index.html`
+- [x] **WA #3** — `loadWhatsAppStatus()` extended to drive `#waSection`; `loadMainPageQr()` added; poll 30s → 5s. `frontend/app.js`
+- [x] **WA #4** — Cache bug: `app.js?v=2` served stale code — bumped to `v=3`. `frontend/index.html`
+- [x] **WA #5** — Blank section bug: `not connected + no QR` now shows "واتساب غير متصل ❌" instead of hiding all children. `frontend/app.js`
+- [x] **WA #6** — Auth bug: `/whatsapp/qr` was `requireDeveloper` — admin/cashier got HTML redirect instead of JSON → broken image icon. Changed to `requireLogin`. `index.js`
+
+## Electron build & packaging (2026-06-11)
+
+- [x] **Build #1** — `package.json`: `name` → `skybird`, `productName` → `Sky Bird`.
+- [x] **Build #2** — `package.json`: `win.icon: "skybird.ico"` added to build config.
+- [x] **Build #3** — `skybird.ico` was a directory (file nested one level too deep) — extracted and regenerated as proper 256×256 ICO from `skybird-logo.png.jpeg` via PowerShell `System.Drawing`.
+- [x] **Build #4** — App startup hang fix: replaced `spawn(node, [index.js])` with `require('./index.js')` in Electron main process. Root cause: `bcrypt` ABI-specific prebuilt not matching Electron's Node.js ABI with `npmRebuild: false` — server crashed silently, loading screen hung forever. In-process execution uses the same runtime, eliminating all ABI mismatches. Added `server.log` file logging and 15-second error timeout with Arabic error page. `main.js`
