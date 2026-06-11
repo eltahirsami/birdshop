@@ -8,11 +8,11 @@ let serverProcess
 
 function startServer() {
   const serverPath = path.join(__dirname, 'index.js')
-  const nodeExe = process.env.NODE_EXE || 'node'
+  const nodeExe = process.env.NODE_EXE || process.execPath
   const dbPath = path.join(app.getPath('userData'), 'birdshop.db')
   serverProcess = spawn(nodeExe, [serverPath], {
     cwd: __dirname,
-    env: Object.assign({}, process.env, { PORT: 3000, DB_PATH: dbPath }),
+    env: Object.assign({}, process.env, { ELECTRON_RUN_AS_NODE: '1', PORT: 3000, DB_PATH: dbPath }),
     stdio: 'ignore',
     detached: false
   })
