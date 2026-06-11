@@ -1266,15 +1266,18 @@ async function loadWhatsAppStatus() {
     const checkingMsg = document.getElementById('waCheckingMsg')
     const connectedMsg = document.getElementById('waConnectedMsg')
     const qrSection = document.getElementById('waQrSection')
-    if (checkingMsg) checkingMsg.style.display = 'none'
-    if (connectedMsg) connectedMsg.style.display = data.connected ? 'block' : 'none'
-    if (qrSection) {
-      if (!data.connected && data.hasQr) {
-        qrSection.style.display = 'block'
-        await loadMainPageQr()
-      } else {
-        qrSection.style.display = 'none'
-      }
+    if (data.connected) {
+      if (checkingMsg) checkingMsg.style.display = 'none'
+      if (connectedMsg) connectedMsg.style.display = 'block'
+      if (qrSection) qrSection.style.display = 'none'
+    } else if (data.hasQr) {
+      if (checkingMsg) checkingMsg.style.display = 'none'
+      if (connectedMsg) connectedMsg.style.display = 'none'
+      if (qrSection) { qrSection.style.display = 'block'; await loadMainPageQr() }
+    } else {
+      if (checkingMsg) { checkingMsg.style.display = 'block'; checkingMsg.innerText = 'واتساب غير متصل ❌' }
+      if (connectedMsg) connectedMsg.style.display = 'none'
+      if (qrSection) qrSection.style.display = 'none'
     }
   } catch (e) {}
 }
