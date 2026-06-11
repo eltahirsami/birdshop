@@ -71,6 +71,24 @@
 - [x] **Login #1** — Added Sky Bird logo (`skybird-logo.png.jpeg`, max 150px) and bold shop name centered above the login form. `frontend/login.html`
 - [x] **Login #2** — Fixed image src path: file on disk is `skybird-logo.png.jpeg` (double extension), not `skybird-logo.png`. `frontend/login.html`
 
+## UI & Settings (2026-06-11)
+
+- [x] **UI #1** — Login button styled gold (`background:#b8860b`) to match app accent. `frontend/login.html`
+- [x] **Settings #1** — Added `invoice_title` and `shop_phone` fields to developer panel settings form. `frontend/developer.html`
+- [x] **Settings #2** — `loadAppSettings()` in `app.js` now calls `GET /settings` (new public route) instead of `GET /developer/settings` — fixes settings not loading for cashier/admin roles. `index.js` + `frontend/app.js`
+- [x] **Settings #3** — `GET /settings` route added behind `requireLogin`, returns `shop_name`, `invoice_title`, `shop_phone`. Default DB rows added for `invoice_title` and `shop_phone`. `index.js` + `database.js`
+
+## License subscription system (2026-06-11)
+
+- [x] **License #1** — `license.js` rewritten: new format is base64-encoded JSON `{machineId, expiry, sig}` signed with `HMAC-SHA256(SECRET, machineId|expiry)`. `getLicenseStatus()` returns `{valid, reason, daysRemaining, expiry}` checking signature → machine match → expiry in order. `license.js`
+- [x] **License #2** — `generate-license.js` updated: accepts two args `MACHINEID YYYY-MM-DD`; validates date format before generating. `generate-license.js`
+- [x] **License #3** — `GET /license/status` returns full status object (machineId, licensed, status, expiry, daysRemaining). `POST /license/activate` validates new base64 format with specific Arabic error messages for wrong key / wrong machine / expired key. `index.js`
+- [x] **License #4** — License middleware and root route now pass `?reason=expired|machine_mismatch|not_licensed` to blocked screen redirect. `index.js`
+- [x] **License #5** — `license.html` shows reason-specific Arabic messages with colour coding; expired screen shows expiry date; input has no length restriction for base64 key. `frontend/license.html`
+- [x] **License #6** — Developer panel: new 🔑 licence info card showing machine ID, colour-coded status, expiry date, days remaining (red ≤7 / orange ≤30 / green). Renewal textarea + activate button calling `POST /license/activate`. `frontend/developer.html`
+- [x] **License #7** — `app.js`: `showLicenseWarning()` prepends dismissible gold banner on page load when `daysRemaining ≤ 30` with message "تنبيه: ينتهي اشتراكك خلال X يوم". `frontend/app.js`
+- [x] **License #8** — Feature developed on `feature/license-subscription` branch, merged to `main` at commit `849873b`.
+
 ## Suppliers screen – new features (2026-06-05)
 
 - [x] **Suppliers Feature A** — Payment history list in left panel: scrollable table (date, amount, method, notes) inserted under the 3 totals. `loadPayments()` now populates both the existing right-panel table and the new `supplierPaymentsBody` — no extra fetch. `suppliers.html` + `suppliers.js`
