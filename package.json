@@ -1,5 +1,5 @@
 {
-  "name": "smart-pos-system",
+  "name": "skybird",
   "version": "1.0.0",
   "description": "🧾 Smart POS System",
   "main": "main.js",
@@ -9,7 +9,7 @@
   },
   "build": {
     "appId": "com.smartpos.system",
-    "productName": "🧾 Smart POS System",
+    "productName": "Sky Bird",
     "asar": false,
     "npmRebuild": false,
     "win": {
