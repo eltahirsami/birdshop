@@ -231,8 +231,8 @@
         </div>
         <div id="waQrContainer" style="text-align:center;display:none;">
           <span class="label">// امسح بواتساب</span>
-          <img id="waQrImg" src="" alt="QR Code" style="width:200px;height:200px;border-radius:8px;border:2px solid var(--border);background:#fff;">
-          <p style="color:var(--text-dim);font-size:11px;font-family:var(--mono);margin-top:6px;">يتجدد الكود تلقائياً</p>
+          <img id="waQrImg" alt="QR Code" style="width:220px;height:220px;border-radius:8px;border:2px solid var(--border);background:#fff;display:block;margin:0 auto;">
+          <p style="color:var(--text-dim);font-size:11px;font-family:var(--mono);margin-top:6px;">يتجدد الكود تلقائياً كل 5 ثواني</p>
         </div>
       </div>
     </div>
@@ -303,7 +303,7 @@ window.onload = async () => {
   loadLicenseInfo()
   loadWaStatus()
   setInterval(loadLogs, 60000)
-  setInterval(loadWaStatus, 10000)
+  setInterval(loadWaStatus, 5000)
 }
 
 function updateTime() {
@@ -635,22 +635,23 @@ async function loadWaStatus() {
       statusEl.innerHTML = '<span style="color:#ff4757;font-size:18px;">❌ غير متصل</span>'
       if (data.hasQr) {
         qrContainer.style.display = 'block'
-        loadWaQr()
+        await loadWaQr()
       } else {
         qrContainer.style.display = 'none'
       }
     }
-  } catch (e) {}
+  } catch (e) { console.error('WA status error:', e) }
 }
 
 async function loadWaQr() {
   try {
     const res = await fetch('/whatsapp/qr', { credentials: 'include' })
     const data = await res.json()
-    if (data.qr) {
-      document.getElementById('waQrImg').src = data.qr
+    const img = document.getElementById('waQrImg')
+    if (data.qr && img) {
+      img.src = data.qr
     }
-  } catch (e) {}
+  } catch (e) { console.error('QR fetch error:', e) }
 }
 
 async function loadLicenseInfo() {
