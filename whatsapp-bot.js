@@ -2,6 +2,9 @@ const { Client, LocalAuth } = require('whatsapp-web.js')
 const qrcode = require('qrcode-terminal')
 const db = require('./database')
 
+let _connected = false
+let _currentQr = null
+
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
@@ -14,14 +17,22 @@ const client = new Client({
 client.on('qr', (qr) => {
   console.log('امسح هذا الـ QR بواتساب:')
   qrcode.generate(qr, { small: true })
+  _currentQr = qr
 })
 
 client.on('ready', () => {
   console.log('✅ واتساب متصل')
+  _connected = true
+  _currentQr = null
 })
 
 client.on('auth_failure', () => {
   console.log('❌ فشل تسجيل الدخول لواتساب')
+  _connected = false
+})
+
+client.on('disconnected', () => {
+  _connected = false
 })
 
 // دالة إرسال التقرير
@@ -111,4 +122,12 @@ try {
   console.log('WhatsApp disabled:', e.message)
 }
 
-module.exports = { sendDailyReport }
+function getWhatsAppStatus() {
+  return { connected: _connected, hasQr: _currentQr !== null }
+}
+
+function getCurrentQr() {
+  return _currentQr
+}
+
+module.exports = { sendDailyReport, getWhatsAppStatus, getCurrentQr }

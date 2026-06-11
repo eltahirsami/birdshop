@@ -215,6 +215,31 @@
 
   <div class="card" style="margin-bottom:20px;">
     <div class="card-header">
+      <span class="card-title">💬 ربط واتساب</span>
+      <button class="btn btn-primary btn-sm" onclick="loadWaStatus()">🔄 تحديث</button>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+        <div>
+          <span class="label">// حالة الاتصال</span>
+          <div id="waStatusDev" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-size:15px;font-weight:bold;margin-bottom:10px;">
+            جاري التحقق...
+          </div>
+          <p style="color:var(--text-dim);font-size:12px;font-family:var(--mono);">
+            عند عدم الاتصال يظهر كود QR على اليمين — افتح واتساب على هاتفك وامسح الكود
+          </p>
+        </div>
+        <div id="waQrContainer" style="text-align:center;display:none;">
+          <span class="label">// امسح بواتساب</span>
+          <img id="waQrImg" src="" alt="QR Code" style="width:200px;height:200px;border-radius:8px;border:2px solid var(--border);background:#fff;">
+          <p style="color:var(--text-dim);font-size:11px;font-family:var(--mono);margin-top:6px;">يتجدد الكود تلقائياً</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
       <span class="card-title">📋 سجل الأحداث</span>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-success btn-sm" onclick="exportLogs()">📊 تصدير Excel</button>
@@ -276,7 +301,9 @@ window.onload = async () => {
   loadLogs()
   loadSettings()
   loadLicenseInfo()
+  loadWaStatus()
   setInterval(loadLogs, 60000)
+  setInterval(loadWaStatus, 10000)
 }
 
 function updateTime() {
@@ -592,6 +619,38 @@ function exportLogs() {
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'سجل الأحداث')
   XLSX.writeFile(wb, 'سجل-الأحداث-' + new Date().toLocaleDateString('ar') + '.xlsx')
+}
+
+async function loadWaStatus() {
+  try {
+    const res = await fetch('/whatsapp/status', { credentials: 'include' })
+    const data = await res.json()
+    const statusEl = document.getElementById('waStatusDev')
+    const qrContainer = document.getElementById('waQrContainer')
+
+    if (data.connected) {
+      statusEl.innerHTML = '<span style="color:#00ff88;font-size:18px;">✅ متصل</span>'
+      qrContainer.style.display = 'none'
+    } else {
+      statusEl.innerHTML = '<span style="color:#ff4757;font-size:18px;">❌ غير متصل</span>'
+      if (data.hasQr) {
+        qrContainer.style.display = 'block'
+        loadWaQr()
+      } else {
+        qrContainer.style.display = 'none'
+      }
+    }
+  } catch (e) {}
+}
+
+async function loadWaQr() {
+  try {
+    const res = await fetch('/whatsapp/qr', { credentials: 'include' })
+    const data = await res.json()
+    if (data.qr) {
+      document.getElementById('waQrImg').src = data.qr
+    }
+  } catch (e) {}
 }
 
 async function loadLicenseInfo() {

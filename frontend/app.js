@@ -1248,6 +1248,23 @@ function showStockAlert(msg, type) {
   setTimeout(() => div.remove(), 8000)
 }
 
+async function loadWhatsAppStatus() {
+  try {
+    const res = await fetch('/whatsapp/status', { credentials: 'include' })
+    const data = await res.json()
+    const dot = document.getElementById('waDot')
+    const label = document.getElementById('waLabel')
+    if (!dot || !label) return
+    if (data.connected) {
+      dot.style.background = '#00e676'
+      label.innerText = 'واتساب متصل'
+    } else {
+      dot.style.background = '#ff4757'
+      label.innerText = 'واتساب غير متصل'
+    }
+  } catch (e) {}
+}
+
 function showLicenseWarning(days) {
   const div = document.createElement('div')
   div.id = 'licenseWarningBanner'
@@ -1275,6 +1292,8 @@ window.onload = async () => {
   loadTodayProfit()
   loadTodayStats()
   loadMonthProfit()
+  loadWhatsAppStatus()
+  setInterval(loadWhatsAppStatus, 30000)
 
   if (userRole === "admin" || userRole === "cashier") {
     loadSalesHistory()

@@ -9,8 +9,13 @@ const cron = require('node-cron');
 const fs = require('fs');
 
 let sendDailyReport = null;
+let getWhatsAppStatus = () => ({ connected: false, hasQr: false });
+let getCurrentQr = () => null;
 try {
-  sendDailyReport = require('./whatsapp-bot').sendDailyReport;
+  const waBot = require('./whatsapp-bot');
+  sendDailyReport = waBot.sendDailyReport;
+  if (waBot.getWhatsAppStatus) getWhatsAppStatus = waBot.getWhatsAppStatus;
+  if (waBot.getCurrentQr) getCurrentQr = waBot.getCurrentQr;
 } catch (e) {
   console.log('WhatsApp bot not available:', e.message);
 }
@@ -918,6 +923,21 @@ app.get('/settings', requireLogin, (req, res) => {
     res.json(obj);
   });
 });
+
+app.get('/whatsapp/status', requireLogin, (req, res) => {
+  res.json(getWhatsAppStatus())
+})
+
+app.get('/whatsapp/qr', requireDeveloper, async (req, res) => {
+  const qrString = getCurrentQr()
+  if (!qrString) return res.json({ qr: null })
+  try {
+    const qrImage = await require('qrcode').toDataURL(qrString)
+    res.json({ qr: qrImage })
+  } catch (e) {
+    res.json({ qr: null })
+  }
+})
 
 app.get('/developer/settings', requireDeveloper, (req, res) => {
   db.all("SELECT key, value FROM settings", [], (err, rows) => {
