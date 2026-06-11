@@ -477,7 +477,7 @@ async function loadSalesHistory(page) {
   page = (page && page >= 1) ? page : 1
   salesHistoryPage = page
 
-  const params = new URLSearchParams({ page })
+  const params = new URLSearchParams({ page, limit: 5 })
   if (salesHistorySearch) params.set('q', salesHistorySearch)
   if (salesHistoryFrom) params.set('from', salesHistoryFrom)
   if (salesHistoryTo) params.set('to', salesHistoryTo)
@@ -486,7 +486,7 @@ async function loadSalesHistory(page) {
   const data = await res.json()
   const rows = data.rows || []
   const total = data.total || 0
-  const totalPages = Math.ceil(total / 50) || 1
+  const totalPages = Math.ceil(total / 5) || 1
 
   const adminTable = document.getElementById("salesHistoryTable")
   const cashierTable = document.getElementById("cashierSalesTable")
@@ -584,7 +584,7 @@ async function loadInvoices(page) {
   page = (page && page >= 1) ? page : 1
   invoicesPage = page
 
-  const params = new URLSearchParams({ page })
+  const params = new URLSearchParams({ page, limit: 5 })
   if (invoicesSearch) params.set('q', invoicesSearch)
   if (invoicesFrom) params.set('from', invoicesFrom)
   if (invoicesTo) params.set('to', invoicesTo)
@@ -593,7 +593,7 @@ async function loadInvoices(page) {
   const data = await res.json()
   const rows = data.rows || []
   const total = data.total || 0
-  const totalPages = Math.ceil(total / 50) || 1
+  const totalPages = Math.ceil(total / 5) || 1
 
   const adminTable = document.getElementById("invoiceTable")
   const cashierTable = document.getElementById("cashierInvoiceTable")
