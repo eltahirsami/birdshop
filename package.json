@@ -13,7 +13,8 @@
     "asar": false,
     "npmRebuild": false,
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "skybird.ico"
     },
     "nsis": {
       "oneClick": true,
