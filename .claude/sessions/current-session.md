@@ -1,12 +1,13 @@
 # Current Session
 
-**Date:** 2026-06-05
+**Date:** 2026-06-11
 **Status:** Session closed ✅
 
 ## Summary
 
-All known TODO items completed. Codebase is in clean state.
-See `00-INDEX.md` for session history and `COMPLETED.md` for full feature log.
+Added Sky Bird logo and shop name above the login form in `login.html`.
+Fixed image path (actual filename on disk is `skybird-logo.png.jpeg`).
+Commits: `a979bec`, `1561d12`
 
 ## Next session should
 

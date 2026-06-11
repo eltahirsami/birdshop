@@ -51,5 +51,29 @@
   - `frontend/index.html`: added invoice number text input to the invoices filter row.
 
 - [x] **Feature #7** — Cashier sales history + invoices tables in UI:
+
+## Suppliers screen bug fixes (2026-06-05)
+
+- [x] **Suppliers #1** — `nextAllPurchasesPage()` upper bound: added `allPurchasesTotalPages` module var; stored in `loadAllPurchases`; `nextAllPurchasesPage` guards `allPurchasesPage >= allPurchasesTotalPages`. `suppliers.js`
+- [x] **Suppliers #2** — `payPurchaseSelect` stale after "عرض الكل": `loadAllPurchases` now clears `lastPurchases = []` and calls `renderPayPurchaseSelect()` before fetching, so the payment dropdown resets when entering all-purchases mode. `suppliers.js`
+- [x] **Suppliers #3** — `unitCost = 0` allowed: changed guard in `addItemToDraft` from `unitCost < 0` to `unitCost <= 0`. `suppliers.js`
+- [x] **Suppliers #4** — Duplicate product in draft: added `draftItems.some(it => it.product_id === pid)` check before push; shows Arabic error "هذا المنتج موجود بالفعل في الفاتورة". `suppliers.js`
+- [x] **Suppliers #5** — Payment exceeds balance: `createPayment()` reads `payRemaining` field and blocks save if `amount > remaining`, showing Arabic error with the current balance. `suppliers.js`
+- [x] **Suppliers #6** — Invoice date free-text: changed `purchaseInvoiceDate` input to `type="date"` (native browser date picker, `YYYY-MM-DD`). Existing stored data unaffected. `suppliers.html`
+- [x] **Suppliers #7** — No save confirmation: added `confirm('هل أنت متأكد من حفظ الفاتورة؟')` at the top of `savePurchase()`. `suppliers.js`
+
+## Suppliers screen – additional fixes (2026-06-05)
+
+- [x] **Suppliers #8** — "عرض" button in invoice table: `viewPurchase()` was only populating a hidden inline detail section with no print option. Replaced with a `window.open` popup (450×700) showing supplier name, invoice number, date, notes, full line-items table, grand total, and a print button. Uses existing `PRINT_STYLE`. `suppliers.js`
+
+## Login screen (2026-06-11)
+
+- [x] **Login #1** — Added Sky Bird logo (`skybird-logo.png.jpeg`, max 150px) and bold shop name centered above the login form. `frontend/login.html`
+- [x] **Login #2** — Fixed image src path: file on disk is `skybird-logo.png.jpeg` (double extension), not `skybird-logo.png`. `frontend/login.html`
+
+## Suppliers screen – new features (2026-06-05)
+
+- [x] **Suppliers Feature A** — Payment history list in left panel: scrollable table (date, amount, method, notes) inserted under the 3 totals. `loadPayments()` now populates both the existing right-panel table and the new `supplierPaymentsBody` — no extra fetch. `suppliers.html` + `suppliers.js`
+- [x] **Suppliers Feature B** — Print supplier statement ("كشف حساب" button): fetches purchases, payments, and summary in parallel; merges into one chronological table sorted by `created_at` with columns التاريخ / البيان / مشتريات / مدفوع / الرصيد (running balance per row); header shows supplier name, phone, address; footer shows final remaining balance. 620×800 popup, `PRINT_STYLE` widened to 130mm. `suppliers.js`
   - `frontend/index.html`: added `cashierSalesTable` (4-col: product, qty, total, date) and `cashierInvoiceTable` (4-col: invoice#, date, total, print) inside `#cashierSection`, each with pagination controls using `*Cashier` IDs.
   - `frontend/app.js`: `loadSalesHistory` and `loadInvoices` now also update `historyPageInfoCashier`/`prevHistoryPageCashier`/`nextHistoryPageCashier` and invoice equivalents. Added `applyInvoicesFilterCashier()` and `resetInvoicesFilterCashier()` for cashier invoice search.
