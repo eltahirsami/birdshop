@@ -65,7 +65,8 @@ function setMsg(id, text, ok) {
 function renderSuppliers() {
   const topSel = document.getElementById('supplierSelect')
   const purchaseSel = document.getElementById('purchaseSupplierSelect')
-  const sels = [topSel, purchaseSel].filter(Boolean)
+  const paySel = document.getElementById('paySupplierSelect')
+  const sels = [topSel, purchaseSel, paySel].filter(Boolean)
   sels.forEach(s => { s.innerHTML = '' })
 
   suppliers.forEach(sp => {
@@ -196,6 +197,8 @@ function onSupplierChange() {
   selectedSupplierId = sel.value ? parseInt(sel.value, 10) : null
   const purchaseSel = document.getElementById('purchaseSupplierSelect')
   if (purchaseSel) purchaseSel.value = sel.value
+  const paySel = document.getElementById('paySupplierSelect')
+  if (paySel) paySel.value = sel.value
   refreshSupplier()
 }
 
@@ -204,6 +207,18 @@ function onPurchaseSupplierChange() {
   selectedSupplierId = sel.value ? parseInt(sel.value, 10) : null
   const topSel = document.getElementById('supplierSelect')
   if (topSel) topSel.value = sel.value
+  const paySel = document.getElementById('paySupplierSelect')
+  if (paySel) paySel.value = sel.value
+  refreshSupplier()
+}
+
+function onPaySupplierChange() {
+  const sel = document.getElementById('paySupplierSelect')
+  selectedSupplierId = sel.value ? parseInt(sel.value, 10) : null
+  const topSel = document.getElementById('supplierSelect')
+  if (topSel) topSel.value = sel.value
+  const purchaseSel = document.getElementById('purchaseSupplierSelect')
+  if (purchaseSel) purchaseSel.value = sel.value
   refreshSupplier()
 }
 
