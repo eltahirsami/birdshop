@@ -896,6 +896,7 @@ async function openInvoice(number) {
   const win = window.open("", "", "width=700,height=700")
   win.document.write(html)
   win.document.close()
+  setTimeout(() => win.print(), 500)
 }
 
 /* =========================
