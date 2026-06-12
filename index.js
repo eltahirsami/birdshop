@@ -872,12 +872,18 @@ app.get('/developer/backups', requireDeveloper, (req, res) => {
 });
 
 app.post('/developer/backup-now', requireCashier, (req, res) => {
-  const date = new Date().toISOString().slice(0, 10);
-  const time = new Date().toTimeString().slice(0, 8).replace(/:/g, '-');
-  const backupDir = path.join(__dirname, 'backups');
-  if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir);
-  const backupFile = path.join(backupDir, 'birdshop-' + date + '-' + time + '.db');
+  const now = new Date();
+  const date = now.toISOString().slice(0, 10);
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const backupDir = 'C:\\SkyBird-Backup';
+  if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+  const backupFile = path.join(backupDir, 'birdshop_' + date + '_' + hh + '-' + mm + '.db');
   fs.copyFileSync(DB_FILE, backupFile);
+  const files = fs.readdirSync(backupDir).filter(f => f.startsWith('birdshop_') && f.endsWith('.db')).sort();
+  if (files.length > 10) {
+    files.slice(0, files.length - 10).forEach(f => fs.unlinkSync(path.join(backupDir, f)));
+  }
   logAction(req.session.user.id, req.session.user.username, 'نسخ احتياطي يدوي', path.basename(backupFile));
   res.json({ message: 'تم النسخ' });
 });
