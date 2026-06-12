@@ -3,6 +3,7 @@ let products = []
 let selectedSupplierId = null
 let draftItems = []
 let lastPurchases = []
+let lastPayments = []
 let allPurchasesMode = false
 let allPurchasesPage = 1
 let allPurchasesTotalPages = 1
@@ -271,8 +272,6 @@ async function loadPurchases() {
     `
     body.appendChild(tr)
   })
-
-  renderPayPurchaseSelect()
 }
 
 async function loadAllPurchases(page) {
@@ -330,6 +329,15 @@ function nextAllPurchasesPage() {
   loadAllPurchases(allPurchasesPage + 1)
 }
 
+function getInvoiceRemaining(purchaseId) {
+  const purchase = lastPurchases.find(p => p.id === purchaseId)
+  if (!purchase) return 0
+  const paid = lastPayments
+    .filter(p => p.purchase_id === purchaseId)
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0)
+  return Math.max(0, Number(purchase.total || 0) - paid)
+}
+
 function renderPayPurchaseSelect() {
   const sel = document.getElementById('payPurchaseSelect')
   if (!sel) return
@@ -339,12 +347,27 @@ function renderPayPurchaseSelect() {
   opt0.textContent = '(على الحساب)'
   sel.appendChild(opt0)
   lastPurchases.forEach(p => {
+    const remaining = getInvoiceRemaining(p.id)
+    if (remaining <= 0) return
     const opt = document.createElement('option')
     opt.value = String(p.id)
-    opt.textContent = `فاتورة ${p.invoice_number || p.id} — ${money(p.total)}`
+    opt.textContent = `فاتورة ${p.invoice_number || p.id} — متبقي: ${money(remaining)}`
     sel.appendChild(opt)
   })
   sel.value = ''
+  onPayPurchaseChange()
+}
+
+function onPayPurchaseChange() {
+  const sel = document.getElementById('payPurchaseSelect')
+  const remEl = document.getElementById('payRemaining')
+  if (!sel || !remEl) return
+  if (!sel.value) {
+    const sumRem = document.getElementById('sumRemaining')
+    remEl.value = sumRem ? sumRem.innerText : '0'
+  } else {
+    remEl.value = money(getInvoiceRemaining(parseInt(sel.value, 10)))
+  }
 }
 
 async function loadPayments() {
@@ -352,8 +375,9 @@ async function loadPayments() {
   const spBody = document.getElementById('supplierPaymentsBody')
   if (body) body.innerHTML = ''
   if (spBody) spBody.innerHTML = ''
-  if (!selectedSupplierId) return
+  if (!selectedSupplierId) { lastPayments = []; return }
   const rows = await fetchJson(`/suppliers/${selectedSupplierId}/payments`)
+  lastPayments = rows || []
   if (!rows || rows.length === 0) {
     if (body) body.innerHTML = `<tr><td colspan="4">لا توجد دفعات</td></tr>`
     if (spBody) spBody.innerHTML = `<tr><td colspan="4">لا توجد دفعات</td></tr>`
@@ -626,6 +650,7 @@ async function refreshSupplier() {
     await loadSummary()
     await loadPurchases()
     await loadPayments()
+    renderPayPurchaseSelect()
   } catch (e) {
     setMsg('purchasesMsg', e.message, false)
   }
