@@ -389,7 +389,7 @@ app.get('/sales/today', requireLogin, requireCashier, (req, res) => {
 
 app.get('/sales/history', requireLogin, requireCashier, (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = 50;
+  const limit = parseInt(req.query.limit) || 50;
   const offset = (page - 1) * limit;
   const q = (req.query.q || '').trim();
   const from = req.query.from || '';
@@ -453,7 +453,7 @@ app.get('/sales/month-invoices', requireLogin, requireCashier, (req, res) => {
 
 app.get('/sales/invoices', requireLogin, requireCashier, (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = 50;
+  const limit = parseInt(req.query.limit) || 50;
   const offset = (page - 1) * limit;
   const from = req.query.from || '';
   const to = req.query.to || '';
