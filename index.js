@@ -63,8 +63,7 @@ app.post('/license/dev-auth', (req, res) => {
 app.post('/license/activate-dev', (req, res) => {
   const { username, password, expiry, machineId } = req.body
   if (!username || !password || !expiry || !machineId) return res.status(400).json({ success: false, message: 'بيانات ناقصة' })
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(expiry)) return res.status(400).json({ success: false, message: 'تاريخ غير صحيح' })
-  if (machineId !== getMachineId()) return res.status(400).json({ success: false, message: 'رقم الجهاز غير مطابق' })
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(expiry)) return res.status(400).json({ success: false, message: 'تاريخ غير صحيح' }}
   db.get("SELECT * FROM users WHERE username = ?", [username.trim()], async (err, user) => {
     if (err || !user) return res.status(401).json({ success: false, message: 'بيانات غير صحيحة' })
     if (user.role !== 'developer') return res.status(403).json({ success: false, message: 'غير مصرح' })
