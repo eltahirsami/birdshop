@@ -62,11 +62,13 @@ const REASON_MESSAGES = {
 }
 
 let devCredentials = { username: '', password: '' }
+let currentMachineId = ''
 
 async function loadStatus() {
   const res = await fetch('/license/status')
   const data = await res.json()
-  document.getElementById('machineId').innerText = data.machineId
+  currentMachineId = data.machineId || ''
+  document.getElementById('machineId').innerText = currentMachineId
   document.getElementById('expiryDate').min = new Date().toISOString().slice(0, 10)
 
   if (data.licensed) { location.href = '/'; return }
@@ -129,7 +131,7 @@ async function activateDev() {
   const res = await fetch('/license/activate-dev', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: devCredentials.username, password: devCredentials.password, expiry })
+    body: JSON.stringify({ username: devCredentials.username, password: devCredentials.password, expiry, machineId: currentMachineId })
   })
   const data = await res.json()
   if (data.success) {
