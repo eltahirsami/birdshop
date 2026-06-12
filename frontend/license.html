@@ -14,14 +14,14 @@
   .expiry-info { font-size:12px; color:#ff4757; margin-bottom:12px; }
   .machine-id { background:#0a0e1a; border:1px solid #1e3a5f; border-radius:8px; padding:12px; font-family:monospace; color:#00ff88; font-size:14px; letter-spacing:1px; margin:16px 0; word-break:break-all; }
   .label { font-size:12px; color:#64748b; margin-bottom:6px; display:block; }
-  input { width:100%; padding:12px; background:#0a0e1a; border:1px solid #1e3a5f; border-radius:8px; color:#e2e8f0; font-size:13px; text-align:center; box-sizing:border-box; margin-bottom:12px; outline:none; font-family:monospace; word-break:break-all; }
+  input { width:100%; padding:12px; background:#0a0e1a; border:1px solid #1e3a5f; border-radius:8px; color:#e2e8f0; font-size:13px; text-align:center; box-sizing:border-box; margin-bottom:12px; outline:none; font-family:Tahoma; }
   input:focus { border-color:#00d4ff; }
   button { width:100%; padding:12px; background:linear-gradient(135deg,#0099cc,#00d4ff); color:#000; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer; font-family:Tahoma; }
-  .btn-copy { background:#1a2235; color:#00d4ff; border:1px solid #1e3a5f; margin-bottom:16px; }
   .msg { margin-top:12px; font-size:13px; padding:10px; border-radius:6px; display:none; }
   .msg.success { background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.3); color:#00ff88; display:block; }
   .msg.error   { background:rgba(255,71,87,0.1);  border:1px solid rgba(255,71,87,0.3);  color:#ff4757;  display:block; }
   hr { border:none; border-top:1px solid #1e3a5f; margin:20px 0; }
+  .back-link { color:#64748b; font-size:12px; margin-top:12px; display:block; cursor:pointer; text-decoration:underline; }
 </style>
 </head>
 <body>
@@ -33,13 +33,23 @@
 
   <hr>
 
-  <span class="label">رقم الجهاز (أرسله للمبرمج)</span>
-  <div class="machine-id" id="machineId">جاري التحميل...</div>
-  <button class="btn-copy" onclick="copyId()">📋 نسخ رقم الجهاز</button>
+  <!-- Stage 1: Developer login -->
+  <div id="loginSection">
+    <span class="label">تسجيل الدخول كمطور لتفعيل البرنامج</span>
+    <input id="devUsername" placeholder="اسم المستخدم" autocomplete="username" />
+    <input id="devPassword" type="password" placeholder="كلمة المرور" autocomplete="current-password" />
+    <button onclick="devLogin()">🔐 تسجيل الدخول</button>
+  </div>
 
-  <span class="label">أدخل كود التفعيل</span>
-  <input id="licenseKey" placeholder="الصق كود التفعيل هنا">
-  <button onclick="activate()">✅ تفعيل البرنامج</button>
+  <!-- Stage 2: Activation — visible only after developer login -->
+  <div id="activateSection" style="display:none;">
+    <span class="label">رقم الجهاز</span>
+    <div class="machine-id" id="machineId">جاري التحميل...</div>
+    <span class="label">تاريخ انتهاء الاشتراك</span>
+    <input id="expiryDate" type="date" />
+    <button onclick="activateDev()">✅ تفعيل البرنامج</button>
+    <span class="back-link" onclick="showLogin()">↩ رجوع</span>
+  </div>
 
   <div class="msg" id="msg"></div>
 </div>
@@ -48,18 +58,18 @@
 const REASON_MESSAGES = {
   expired:         { cls: 'expired',  text: '⏰ انتهت صلاحية اشتراكك — تواصل مع المبرمج لتجديد الاشتراك' },
   machine_mismatch:{ cls: 'mismatch', text: '⚠️ هذا الترخيص مرتبط بجهاز مختلف — تواصل مع المبرمج' },
-  not_licensed:    { cls: 'default',  text: '🔒 البرنامج غير مفعّل — أرسل رقم الجهاز للمبرمج للحصول على كود التفعيل' }
+  not_licensed:    { cls: 'default',  text: '🔒 البرنامج غير مفعّل — تواصل مع المبرمج' }
 }
 
-async function loadMachineId() {
+let devCredentials = { username: '', password: '' }
+
+async function loadStatus() {
   const res = await fetch('/license/status')
   const data = await res.json()
   document.getElementById('machineId').innerText = data.machineId
+  document.getElementById('expiryDate').min = new Date().toISOString().slice(0, 10)
 
-  if (data.licensed) {
-    location.href = '/'
-    return
-  }
+  if (data.licensed) { location.href = '/'; return }
 
   const urlReason = new URLSearchParams(location.search).get('reason') || data.status || 'not_licensed'
   const info = REASON_MESSAGES[urlReason] || REASON_MESSAGES.not_licensed
@@ -74,35 +84,66 @@ async function loadMachineId() {
   }
 }
 
-function copyId() {
-  const id = document.getElementById('machineId').innerText
-  navigator.clipboard.writeText(id)
-  alert('تم النسخ: ' + id)
+function showLogin() {
+  document.getElementById('loginSection').style.display = 'block'
+  document.getElementById('activateSection').style.display = 'none'
+  document.getElementById('msg').className = 'msg'
+  document.getElementById('msg').innerText = ''
 }
 
-async function activate() {
-  const key = document.getElementById('licenseKey').value.trim()
+async function devLogin() {
+  const username = document.getElementById('devUsername').value.trim()
+  const password = document.getElementById('devPassword').value
   const msg = document.getElementById('msg')
-  if (!key) { msg.className = 'msg error'; msg.innerText = 'أدخل كود التفعيل'; return }
-
-  const res = await fetch('/license/activate', {
+  if (!username || !password) {
+    msg.className = 'msg error'
+    msg.innerText = 'أدخل اسم المستخدم وكلمة المرور'
+    return
+  }
+  const res = await fetch('/license/dev-auth', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key })
+    body: JSON.stringify({ username, password })
   })
   const data = await res.json()
-
   if (data.success) {
-    msg.className = 'msg success'
-    msg.innerText = '✅ تم التفعيل بنجاح — صالح حتى ' + (data.expiry || '') + ' — جاري الانتقال...'
-    setTimeout(() => location.href = '/login.html', 2500)
+    devCredentials = { username, password }
+    document.getElementById('loginSection').style.display = 'none'
+    document.getElementById('activateSection').style.display = 'block'
+    msg.className = 'msg'
+    msg.innerText = ''
   } else {
     msg.className = 'msg error'
-    msg.innerText = '❌ ' + (data.message || 'كود غير صحيح')
+    msg.innerText = '❌ ' + (data.message || 'بيانات غير صحيحة')
   }
 }
 
-loadMachineId()
+async function activateDev() {
+  const expiry = document.getElementById('expiryDate').value
+  const msg = document.getElementById('msg')
+  if (!expiry) {
+    msg.className = 'msg error'
+    msg.innerText = 'اختر تاريخ انتهاء الاشتراك'
+    return
+  }
+  const res = await fetch('/license/activate-dev', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: devCredentials.username, password: devCredentials.password, expiry })
+  })
+  const data = await res.json()
+  if (data.success) {
+    msg.className = 'msg success'
+    msg.innerText = '✅ تم التفعيل بنجاح — صالح حتى ' + data.expiry + ' — جاري الانتقال...'
+    setTimeout(() => location.href = '/login.html', 2500)
+  } else {
+    msg.className = 'msg error'
+    msg.innerText = '❌ ' + (data.message || 'فشل التفعيل')
+    showLogin()
+  }
+}
+
+loadStatus()
 </script>
 </body>
 </html>

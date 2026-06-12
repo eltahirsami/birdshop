@@ -1,5 +1,5 @@
 require('dotenv').config({ path: require('path').join(__dirname, '.env') })
-const { getMachineId, isLicensed, getLicenseStatus, saveLicense } = require('./license')
+const { getMachineId, isLicensed, getLicenseStatus, saveLicense, generateLicenseKey } = require('./license')
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -40,6 +40,43 @@ app.get('/license/status', (req, res) => {
     status: status.reason,
     expiry: status.expiry,
     daysRemaining: status.daysRemaining
+  })
+})
+
+app.post('/license/dev-auth', (req, res) => {
+  const { username, password } = req.body
+  if (!username || !password) return res.status(400).json({ success: false, message: 'أدخل اسم المستخدم وكلمة المرور' })
+  db.get("SELECT * FROM users WHERE username = ?", [username.trim()], async (err, user) => {
+    if (err || !user) return res.status(401).json({ success: false, message: 'بيانات غير صحيحة' })
+    if (user.role !== 'developer') return res.status(403).json({ success: false, message: 'غير مصرح — فقط المطور يمكنه التفعيل' })
+    let ok = false
+    if (typeof user.password === 'string' && user.password.startsWith('$2')) {
+      ok = await bcrypt.compare(password, user.password)
+    } else {
+      ok = user.password === password
+    }
+    if (!ok) return res.status(401).json({ success: false, message: 'بيانات غير صحيحة' })
+    res.json({ success: true })
+  })
+})
+
+app.post('/license/activate-dev', (req, res) => {
+  const { username, password, expiry } = req.body
+  if (!username || !password || !expiry) return res.status(400).json({ success: false, message: 'بيانات ناقصة' })
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(expiry)) return res.status(400).json({ success: false, message: 'تاريخ غير صحيح' })
+  db.get("SELECT * FROM users WHERE username = ?", [username.trim()], async (err, user) => {
+    if (err || !user) return res.status(401).json({ success: false, message: 'بيانات غير صحيحة' })
+    if (user.role !== 'developer') return res.status(403).json({ success: false, message: 'غير مصرح' })
+    let ok = false
+    if (typeof user.password === 'string' && user.password.startsWith('$2')) {
+      ok = await bcrypt.compare(password, user.password)
+    } else {
+      ok = user.password === password
+    }
+    if (!ok) return res.status(401).json({ success: false, message: 'بيانات غير صحيحة' })
+    const key = generateLicenseKey(getMachineId(), expiry)
+    saveLicense(key)
+    res.json({ success: true, expiry })
   })
 })
 
@@ -134,7 +171,7 @@ function logAction(userId, username, action, details) {
    ملفات الواجهة
 ========================= */
 app.use((req, res, next) => {
-  const publicPaths = ['/license.html', '/license/status', '/license/activate', '/login.html', '/style.css']
+  const publicPaths = ['/license.html', '/license/status', '/license/activate', '/license/dev-auth', '/license/activate-dev', '/login.html', '/style.css']
   const isPublic = publicPaths.some(p => req.path.startsWith(p))
   if (!isPublic) {
     const ls = getLicenseStatus()
