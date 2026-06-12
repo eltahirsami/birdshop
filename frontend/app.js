@@ -1333,26 +1333,9 @@ async function loadMainPageQr() {
   } catch (e) {}
 }
 
-function showLicenseWarning(days) {
-  const div = document.createElement('div')
-  div.id = 'licenseWarningBanner'
-  div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#b8860b;color:#fff;padding:10px 20px;text-align:center;z-index:9999;font-weight:bold;font-size:14px;'
-  div.innerHTML = `⚠️ تنبيه: ينتهي اشتراكك خلال ${days} يوم — تواصل مع المبرمج لتجديد الاشتراك
-    <button onclick="document.getElementById('licenseWarningBanner').remove()" style="margin-right:16px;background:rgba(0,0,0,0.2);border:none;color:#fff;cursor:pointer;padding:3px 12px;border-radius:4px;font-size:13px;">✕ إغلاق</button>`
-  document.body.prepend(div)
-}
-
 window.onload = async () => {
   await getUser()
   await loadAppSettings()
-
-  try {
-    const licRes = await fetch('/license/status')
-    const licData = await licRes.json()
-    if (licData.daysRemaining !== null && licData.daysRemaining <= 30) {
-      showLicenseWarning(licData.daysRemaining)
-    }
-  } catch (e) {}
 
   await loadProducts()
   await loadCategories()
