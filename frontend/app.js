@@ -339,7 +339,7 @@ async function checkout() {
   if (invoiceNumber) {
     document.getElementById("invoiceNumber").innerText = invoiceNumber
     document.getElementById("invoiceDate").innerText = new Date().toLocaleString()
-    printInvoice(soldItems, invoiceNumber)
+    openInvoice(invoiceNumber)
   }
   isCheckoutProcessing = false
 }
