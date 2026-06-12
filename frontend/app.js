@@ -339,7 +339,7 @@ async function checkout() {
   if (invoiceNumber) {
     document.getElementById("invoiceNumber").innerText = invoiceNumber
     document.getElementById("invoiceDate").innerText = new Date().toLocaleString()
-    openInvoice(invoiceNumber)
+    openInvoiceTwoCopies(invoiceNumber)
   }
   isCheckoutProcessing = false
 }
@@ -890,6 +890,47 @@ async function openInvoice(number) {
       <table><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>${rows}</table>
       <h3>الإجمالي : ${total}</h3>
       <div class="footer">شكراً لزيارتكم — نتمنى لكم تجربة ممتعة</div>
+    </body></html>
+  `
+
+  const win = window.open("", "", "width=700,height=700")
+  win.document.write(html)
+  win.document.close()
+  setTimeout(() => win.print(), 500)
+}
+
+async function openInvoiceTwoCopies(number) {
+  const res = await fetch(`/sales/invoice/${number}`, { credentials: 'include' })
+  const data = await res.json()
+  if (!data || !data.items) { alert("الفاتورة غير موجودة"); return }
+
+  let total = 0
+  let rows = ""
+  data.items.forEach(item => {
+    const price = item.total / item.quantity
+    const sum = item.total
+    total += sum
+    rows += `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${price}</td><td>${sum}</td></tr>`
+  })
+
+  const copyHtml = (title, pageBreak) => `
+    <div${pageBreak ? ' style="page-break-after:always"' : ''}>
+      ${buildShopHeader()}
+      <h2>فاتورة بيع</h2>
+      <p style="text-align:center;font-weight:bold;font-size:13px;">${title}</p>
+      <p>رقم الفاتورة : ${data.invoice_number}</p>
+      <p>التاريخ : ${new Date(data.date).toLocaleString()}</p>
+      <table><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>${rows}</table>
+      <h3>الإجمالي : ${total}</h3>
+      <div class="footer">شكراً لزيارتكم — نتمنى لكم تجربة ممتعة</div>
+    </div>
+  `
+
+  const html = `
+    <html dir="rtl"><head><title>فاتورة</title><style>${INVOICE_STYLE}</style></head>
+    <body>
+      ${copyHtml('نسخة العميل', true)}
+      ${copyHtml('نسخة المحل', false)}
     </body></html>
   `
 
