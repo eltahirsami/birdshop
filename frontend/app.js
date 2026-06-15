@@ -24,6 +24,10 @@ const INVOICE_STYLE = `
   th,td { border-bottom:1px dashed #000; padding:4px; text-align:center; }
   h3 { text-align:center; margin-top:10px; }
   .footer { text-align:center; font-size:10px; color:#777; margin-top:10px; border-top:1px dashed #000; padding-top:5px; }
+  @media print {
+    * { background: white !important; color: black !important; box-shadow: none !important; }
+    body { width: 72mm; font-size: 12px; font-family: Arial, sans-serif; }
+  }
 `
 
 let settingsInvoiceTitle = ''
@@ -763,6 +767,7 @@ function printInvoice(items, invoiceNumber) {
   const win = window.open("", "", "width=700,height=700")
   win.document.write(html)
   win.document.close()
+  setTimeout(() => win.print(), 500)
 }
 
 /* =========================
@@ -823,6 +828,7 @@ function printInvoiceFromSearch() {
     </body></html>
   `)
   win.document.close()
+  setTimeout(() => win.print(), 500)
 }
 
 async function openInvoiceWindow(invoiceNumber) {
@@ -862,6 +868,7 @@ async function openInvoiceWindow(invoiceNumber) {
   const win = window.open("", "", "width=700,height=700")
   win.document.write(html)
   win.document.close()
+  setTimeout(() => win.print(), 500)
 }
 
 async function openInvoice(number) {
