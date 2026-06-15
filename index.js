@@ -777,6 +777,84 @@ app.get('/suppliers/export-data', requireLogin, requireCashier, (req, res) => {
 });
 
 /* =========================
+   Supplier DELETE Routes (admin only)
+========================= */
+app.delete('/suppliers/all', requireLogin, requireAdmin, (req, res) => {
+  db.run('BEGIN', err => {
+    if (err) return res.status(500).json({ error: err.message });
+    db.run('DELETE FROM supplier_payments', err2 => {
+      if (err2) { db.run('ROLLBACK'); return res.status(500).json({ error: err2.message }); }
+      db.run('DELETE FROM supplier_purchase_items', err3 => {
+        if (err3) { db.run('ROLLBACK'); return res.status(500).json({ error: err3.message }); }
+        db.run('DELETE FROM supplier_purchases', err4 => {
+          if (err4) { db.run('ROLLBACK'); return res.status(500).json({ error: err4.message }); }
+          db.run('DELETE FROM suppliers', function(err5) {
+            if (err5) { db.run('ROLLBACK'); return res.status(500).json({ error: err5.message }); }
+            db.run('COMMIT', () => {
+              logAction(req.session.user.id, req.session.user.username, 'مسح كل بيانات الموردين', 'ALL');
+              res.json({ message: 'تم مسح جميع البيانات' });
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
+app.delete('/suppliers/purchases/:purchaseId', requireLogin, requireAdmin, (req, res) => {
+  const purchaseId = parseInt(req.params.purchaseId, 10);
+  if (!purchaseId) return res.status(400).json({ error: 'invalid', message: 'معرف غير صالح' });
+  db.run('BEGIN', err => {
+    if (err) return res.status(500).json({ error: err.message });
+    db.run('DELETE FROM supplier_purchase_items WHERE purchase_id=?', [purchaseId], err2 => {
+      if (err2) { db.run('ROLLBACK'); return res.status(500).json({ error: err2.message }); }
+      db.run('DELETE FROM supplier_purchases WHERE id=?', [purchaseId], function(err3) {
+        if (err3) { db.run('ROLLBACK'); return res.status(500).json({ error: err3.message }); }
+        db.run('COMMIT', () => {
+          logAction(req.session.user.id, req.session.user.username, 'حذف فاتورة مورد', `purchase:${purchaseId}`);
+          res.json({ message: 'تم حذف الفاتورة' });
+        });
+      });
+    });
+  });
+});
+
+app.delete('/suppliers/payments/:paymentId', requireLogin, requireAdmin, (req, res) => {
+  const paymentId = parseInt(req.params.paymentId, 10);
+  if (!paymentId) return res.status(400).json({ error: 'invalid', message: 'معرف غير صالح' });
+  db.run('DELETE FROM supplier_payments WHERE id=?', [paymentId], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    if (this.changes === 0) return res.status(404).json({ error: 'not found', message: 'الدفعة غير موجودة' });
+    logAction(req.session.user.id, req.session.user.username, 'حذف دفعة مورد', `payment:${paymentId}`);
+    res.json({ message: 'تم حذف الدفعة' });
+  });
+});
+
+app.delete('/suppliers/:supplierId', requireLogin, requireAdmin, (req, res) => {
+  const supplierId = parseInt(req.params.supplierId, 10);
+  if (!supplierId) return res.status(400).json({ error: 'invalid', message: 'معرف غير صالح' });
+  db.run('BEGIN', err => {
+    if (err) return res.status(500).json({ error: err.message });
+    db.run('DELETE FROM supplier_payments WHERE supplier_id=?', [supplierId], err2 => {
+      if (err2) { db.run('ROLLBACK'); return res.status(500).json({ error: err2.message }); }
+      db.run('DELETE FROM supplier_purchase_items WHERE purchase_id IN (SELECT id FROM supplier_purchases WHERE supplier_id=?)', [supplierId], err3 => {
+        if (err3) { db.run('ROLLBACK'); return res.status(500).json({ error: err3.message }); }
+        db.run('DELETE FROM supplier_purchases WHERE supplier_id=?', [supplierId], err4 => {
+          if (err4) { db.run('ROLLBACK'); return res.status(500).json({ error: err4.message }); }
+          db.run('DELETE FROM suppliers WHERE id=?', [supplierId], function(err5) {
+            if (err5) { db.run('ROLLBACK'); return res.status(500).json({ error: err5.message }); }
+            db.run('COMMIT', () => {
+              logAction(req.session.user.id, req.session.user.username, 'حذف مورد', `supplier:${supplierId}`);
+              res.json({ message: 'تم حذف المورد وجميع بياناته' });
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
+/* =========================
    Developer Routes
 ========================= */
 app.get('/developer/users', requireDeveloper, (req, res) => {

@@ -8,6 +8,7 @@ let allPurchasesMode = false
 let allPurchasesPage = 1
 let allPurchasesTotalPages = 1
 const ALL_PURCHASES_LIMIT = 50
+let currentUserRole = null
 
 function money(x) {
   const n = Number(x || 0)
@@ -53,6 +54,7 @@ async function ensureSession() {
     document.body.innerHTML = '<div style="font-family:tahoma;padding:20px">غير مصرح</div>'
     return false
   }
+  currentUserRole = role
   return true
 }
 
@@ -268,7 +270,10 @@ async function loadPurchases() {
       <td>${p.invoice_number || p.id}</td>
       <td>${date}</td>
       <td>${money(p.total)}</td>
-      <td><button type="button" class="btnPrimary" style="padding:6px 10px;border-radius:8px" onclick="viewPurchase(${p.id})">عرض</button></td>
+      <td>
+        <button type="button" class="btnPrimary" style="padding:6px 10px;border-radius:8px" onclick="viewPurchase(${p.id})">عرض</button>
+        ${currentUserRole === 'admin' ? `<button type="button" class="btnRed" style="padding:6px 10px;border-radius:8px;margin-right:4px" onclick="deletePurchase(${p.id})">×</button>` : ''}
+      </td>
     `
     body.appendChild(tr)
   })
@@ -299,7 +304,10 @@ async function loadAllPurchases(page) {
         <td>${p.invoice_number || p.id}</td>
         <td>${date}</td>
         <td>${money(p.total)}</td>
-        <td><button type="button" class="btnPrimary" style="padding:6px 10px;border-radius:8px" onclick="viewPurchase(${p.id})">عرض</button></td>
+        <td>
+          <button type="button" class="btnPrimary" style="padding:6px 10px;border-radius:8px" onclick="viewPurchase(${p.id})">عرض</button>
+          ${currentUserRole === 'admin' ? `<button type="button" class="btnRed" style="padding:6px 10px;border-radius:8px;margin-right:4px" onclick="deletePurchase(${p.id})">×</button>` : ''}
+        </td>
       `
       body.appendChild(tr)
     })
@@ -378,14 +386,18 @@ async function loadPayments() {
   if (!selectedSupplierId) { lastPayments = []; return }
   const rows = await fetchJson(`/suppliers/${selectedSupplierId}/payments`)
   lastPayments = rows || []
+  const pmtCols = currentUserRole === 'admin' ? 5 : 4
   if (!rows || rows.length === 0) {
-    if (body) body.innerHTML = `<tr><td colspan="4">لا توجد دفعات</td></tr>`
-    if (spBody) spBody.innerHTML = `<tr><td colspan="4">لا توجد دفعات</td></tr>`
+    if (body) body.innerHTML = `<tr><td colspan="${pmtCols}">لا توجد دفعات</td></tr>`
+    if (spBody) spBody.innerHTML = `<tr><td colspan="${pmtCols}">لا توجد دفعات</td></tr>`
     return
   }
   rows.forEach(r => {
     const inv = r.invoice_number || r.purchase_id || '(على الحساب)'
     const dt = r.paid_at || r.created_at || ''
+    const delBtn = currentUserRole === 'admin'
+      ? `<td><button type="button" class="btnRed" style="padding:4px 8px;border-radius:6px" onclick="deletePayment(${r.id})">×</button></td>`
+      : ''
     if (body) {
       const tr = document.createElement('tr')
       tr.innerHTML = `
@@ -393,6 +405,7 @@ async function loadPayments() {
         <td>${inv}</td>
         <td>${money(r.amount)}</td>
         <td>${dt ? new Date(dt).toLocaleString('ar') : ''}</td>
+        ${delBtn}
       `
       body.appendChild(tr)
     }
@@ -403,6 +416,7 @@ async function loadPayments() {
         <td>${money(r.amount)}</td>
         <td>${r.method || '—'}</td>
         <td>${r.notes || '—'}</td>
+        ${delBtn}
       `
       spBody.appendChild(tr2)
     }
@@ -715,9 +729,58 @@ async function exportSuppliersReport() {
   }
 }
 
+async function deleteSupplier() {
+  if (!selectedSupplierId) { alert('اختر مورد أولاً'); return }
+  if (!confirm('هل تريد حذف المورد وجميع فواتيره ودفعاته؟')) return
+  try {
+    await fetchJson(`/suppliers/${selectedSupplierId}`, { method: 'DELETE' })
+    selectedSupplierId = null
+    await refreshAll()
+  } catch (e) {
+    alert(e.message)
+  }
+}
+
+async function deletePurchase(id) {
+  if (!confirm('هل تريد حذف هذه الفاتورة؟')) return
+  try {
+    await fetchJson(`/suppliers/purchases/${id}`, { method: 'DELETE' })
+    await refreshSupplier()
+    if (allPurchasesMode) await loadAllPurchases(allPurchasesPage)
+  } catch (e) {
+    alert(e.message)
+  }
+}
+
+async function deletePayment(id) {
+  if (!confirm('هل تريد حذف هذه الدفعة؟')) return
+  try {
+    await fetchJson(`/suppliers/payments/${id}`, { method: 'DELETE' })
+    await refreshSupplier()
+  } catch (e) {
+    alert(e.message)
+  }
+}
+
+async function clearAllData() {
+  if (!confirm('هل تريد مسح جميع بيانات الموردين؟ (الموردين والفواتير والدفعات)')) return
+  if (!confirm('تأكيد أخير: سيتم حذف جميع البيانات نهائياً، هل أنت متأكد؟')) return
+  try {
+    await fetchJson('/suppliers/all', { method: 'DELETE' })
+    selectedSupplierId = null
+    await refreshAll()
+  } catch (e) {
+    alert(e.message)
+  }
+}
+
 window.onload = async () => {
   const ok = await ensureSession()
   if (!ok) return
+  if (currentUserRole === 'admin') {
+    const els = ['deleteSupplierBtn', 'spDeleteTh', 'pmtDeleteTh', 'clearAllSection']
+    els.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = '' })
+  }
   await refreshAll()
   renderDraftItems()
 }

@@ -43,6 +43,7 @@
         <h3 style="margin:0 0 10px;">الموردين</h3>
         <div class="row">
           <select id="supplierSelect" onchange="onSupplierChange()"></select>
+          <button id="deleteSupplierBtn" class="btnRed" type="button" onclick="deleteSupplier()" style="display:none">× حذف المورد</button>
         </div>
         <div class="stats">
           <div class="stat">
@@ -66,7 +67,7 @@
         <div style="max-height:160px;overflow:auto;">
           <table>
             <thead>
-              <tr><th>التاريخ</th><th>المبلغ</th><th>الطريقة</th><th>ملاحظات</th></tr>
+              <tr><th>التاريخ</th><th>المبلغ</th><th>الطريقة</th><th>ملاحظات</th><th id="spDeleteTh" style="display:none">حذف</th></tr>
             </thead>
             <tbody id="supplierPaymentsBody"></tbody>
           </table>
@@ -180,6 +181,7 @@
                 <th>الفاتورة</th>
                 <th>المبلغ</th>
                 <th>التاريخ</th>
+                <th id="pmtDeleteTh" style="display:none">حذف</th>
               </tr>
             </thead>
             <tbody id="paymentsBody"></tbody>
@@ -203,6 +205,9 @@
           </table>
         </div>
       </div>
+    </div>
+    <div id="clearAllSection" style="display:none; text-align:center; margin-top:16px; padding:12px; border:1px dashed #c0392b; border-radius:10px; background:#fff5f5;">
+      <button class="btnRed" type="button" onclick="clearAllData()">مسح كل البيانات</button>
     </div>
   </div>
 
