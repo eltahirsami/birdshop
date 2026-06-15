@@ -15,19 +15,17 @@ let invoicesFrom = ''
 let invoicesTo = ''
 
 const INVOICE_STYLE = `
-  body { font-family:tahoma; width:80mm; margin:0; padding:5px; }
-  .shop-header { text-align:center; border-bottom:2px dashed #000; padding-bottom:8px; margin-bottom:8px; }
-  .shop-name { font-size:18px; font-weight:bold; }
-  .shop-info { font-size:11px; color:#555; }
-  h2 { text-align:center; font-size:14px; margin:8px 0; }
-  table { width:100%; border-collapse:collapse; font-size:12px; }
-  th,td { border-bottom:1px dashed #000; padding:4px; text-align:center; }
-  h3 { text-align:center; margin-top:10px; }
-  .footer { text-align:center; font-size:10px; color:#777; margin-top:10px; border-top:1px dashed #000; padding-top:5px; }
-  @media print {
-    * { background: white !important; color: black !important; box-shadow: none !important; }
-    body { width: 72mm; font-size: 12px; font-family: Arial, sans-serif; }
-  }
+  * { color: #000 !important; background: #fff !important; box-shadow: none !important; }
+  body { font-family: Arial, sans-serif; width: 80mm; margin: 0; padding: 5px; font-size: 14px; color: #000; background: #fff; }
+  .shop-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
+  .shop-name { font-size: 14px; font-weight: bold; }
+  .shop-info { font-size: 14px; }
+  h2 { text-align: center; font-size: 14px; margin: 8px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { border-bottom: 1px dashed #000; padding: 4px; text-align: center; }
+  h3 { text-align: center; margin-top: 10px; font-size: 14px; }
+  .footer { text-align: center; font-size: 14px; margin-top: 10px; border-top: 1px dashed #000; padding-top: 5px; }
+  @media print { body { width: 80mm; } }
 `
 
 let settingsInvoiceTitle = ''
@@ -764,7 +762,7 @@ function printInvoice(items, invoiceNumber) {
     </body></html>
   `
 
-  const win = window.open("", "", "width=700,height=700")
+  const win = window.open("", "", "width=320,height=600")
   win.document.write(html)
   win.document.close()
   setTimeout(() => win.print(), 500)
@@ -816,7 +814,7 @@ async function searchInvoice() {
 function printInvoiceFromSearch() {
   if (!window.lastInvoiceHtml) { alert("لا يوجد فاتورة للطباعة"); return }
 
-  const win = window.open("", "", "width=700,height=700")
+  const win = window.open("", "", "width=320,height=600")
   const htmlContent = window.lastInvoiceHtml.replace(/<button[^>]*>🖨️ طباعة الفاتورة<\/button>/g, '')
   win.document.write(`
     <html dir="rtl"><head><style>${INVOICE_STYLE}</style></head>
@@ -865,7 +863,7 @@ async function openInvoiceWindow(invoiceNumber) {
     </body></html>
   `
 
-  const win = window.open("", "", "width=700,height=700")
+  const win = window.open("", "", "width=320,height=600")
   win.document.write(html)
   win.document.close()
   setTimeout(() => win.print(), 500)
@@ -900,7 +898,7 @@ async function openInvoice(number) {
     </body></html>
   `
 
-  const win = window.open("", "", "width=700,height=700")
+  const win = window.open("", "", "width=320,height=600")
   win.document.write(html)
   win.document.close()
   setTimeout(() => win.print(), 500)
@@ -941,7 +939,7 @@ async function openInvoiceTwoCopies(number) {
     </body></html>
   `
 
-  const win = window.open("", "", "width=700,height=700")
+  const win = window.open("", "", "width=320,height=600")
   win.document.write(html)
   win.document.close()
   setTimeout(() => win.print(), 500)
