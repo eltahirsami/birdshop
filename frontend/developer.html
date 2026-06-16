@@ -239,7 +239,7 @@
           <option value="استرجاع نسخة">استرجاع نسخة</option>
           <option value="مسح سجلات">مسح سجلات</option>
         </select>
-        <button class="btn btn-danger btn-sm" onclick="clearLogsFilter()">✕ مسح الفلتر</button>
+        <button class="btn btn-danger btn-sm" onclick="clearAllLogs()">🗑 مسح كل السجل</button>
       </div>
       <div class="table-wrap">
         <table>
@@ -534,10 +534,16 @@ function filterLogs() {
   renderLogs(filtered)
 }
 
-function clearLogsFilter() {
-  document.getElementById('filterUser').value = ''
-  document.getElementById('filterAction').value = ''
-  loadLogs()
+async function clearAllLogs() {
+  if (!confirm('هل تريد مسح كل سجل الأحداث؟')) return
+  const res = await fetch('/logs/all', { method: 'DELETE', credentials: 'include' })
+  const data = await res.json()
+  if (res.ok) {
+    addLog('تم مسح كل سجل الأحداث')
+    loadLogs()
+  } else {
+    alert(data.error || 'فشل المسح')
+  }
 }
 
 function renderLogs(logs) {

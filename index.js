@@ -947,6 +947,17 @@ app.get('/developer/logs', requireDeveloper, (req, res) => {
   });
 });
 
+app.delete('/logs/all', (req, res) => {
+  if (!req.session.user || !['admin', 'developer'].includes(req.session.user.role)) {
+    return res.status(403).json({ error: 'غير مصرح' });
+  }
+  db.run("DELETE FROM logs", [], function(err) {
+    if (err) return res.status(500).json({ error: 'فشل في مسح السجلات' });
+    logAction(req.session.user.id, req.session.user.username, 'مسح سجلات', 'ALL');
+    res.json({ message: 'تم مسح السجلات بنجاح' });
+  });
+});
+
 app.get('/settings', requireLogin, (req, res) => {
   const keys = ['shop_name', 'invoice_title', 'shop_phone'];
   db.all("SELECT key, value FROM settings WHERE key IN ('shop_name','invoice_title','shop_phone')", [], (err, rows) => {
