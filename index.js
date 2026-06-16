@@ -1025,6 +1025,91 @@ app.get('/developer/stats', requireDeveloper, (req, res) => {
 
 
 /* =========================
+   الطباعة الحرارية ESC/POS
+========================= */
+const net = require('net');
+// escpos package installed — used here via raw ESC/POS bytes for max printer compatibility
+
+function buildEscPosBuffer(data) {
+  const { invoice_number, date, items, total, shop_name, shop_phone } = data;
+  const bufs = [];
+  const b = (...bytes) => bufs.push(Buffer.from(bytes));
+  const t = (str) => bufs.push(Buffer.from(str + '\n', 'utf8'));
+
+  b(0x1b, 0x40);             // ESC @ — init printer
+  b(0x1b, 0x61, 0x01);       // center align
+  b(0x1b, 0x45, 0x01);       // bold on
+  t(shop_name || 'Sky Bird');
+  b(0x1b, 0x45, 0x00);       // bold off
+  if (shop_phone) t(shop_phone);
+  t('--------------------------------');
+  b(0x1b, 0x61, 0x00);       // left align
+  t('فاتورة رقم : ' + invoice_number);
+  const d = date ? new Date(date) : new Date();
+  t('التاريخ : ' + d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB'));
+  t('--------------------------------');
+  t('المنتج / الكمية / السعر / المجموع');
+  t('--------------------------------');
+  items.forEach(item => {
+    const price = (Number(item.total) / Number(item.quantity)).toFixed(2);
+    t(String(item.name));
+    t('  ' + item.quantity + ' x ' + price + ' = ' + Number(item.total).toFixed(2) + ' ر.ق');
+  });
+  t('--------------------------------');
+  b(0x1b, 0x61, 0x02);       // right align
+  b(0x1b, 0x45, 0x01);       // bold on
+  t('الإجمالي : ' + Number(total).toFixed(2) + ' ر.ق');
+  b(0x1b, 0x45, 0x00);       // bold off
+  b(0x1b, 0x61, 0x01);       // center align
+  t('--------------------------------');
+  t('شكراً لزيارتكم');
+  b(0x0a, 0x0a, 0x0a);       // feed 3 lines before cut
+  b(0x1d, 0x56, 0x41, 0x05); // GS V A 5 — partial cut
+  return Buffer.concat(bufs);
+}
+
+app.post('/print/receipt', requireLogin, requireCashier, (req, res) => {
+  const { invoice_number, date, items, total, shop_name, shop_phone } = req.body;
+  if (!invoice_number || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'بيانات ناقصة' });
+  }
+
+  db.all(
+    "SELECT key, value FROM settings WHERE key IN ('printer_ip','printer_port')",
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: 'db error' });
+      const cfg = {};
+      (rows || []).forEach(r => { cfg[r.key] = r.value; });
+      const printerIp   = cfg['printer_ip'] || null;
+      const printerPort = parseInt(cfg['printer_port'] || '9100', 10);
+      if (!printerIp) {
+        return res.status(500).json({ error: 'الطابعة غير مهيأة — أضف printer_ip في إعدادات المطور' });
+      }
+
+      const buf = buildEscPosBuffer({ invoice_number, date, items, total, shop_name, shop_phone });
+      let responded = false;
+      const socket = new net.Socket();
+      socket.setTimeout(5000);
+
+      socket.connect(printerPort, printerIp, () => {
+        socket.write(buf, () => socket.end());
+      });
+      socket.on('close', () => {
+        if (!responded) { responded = true; res.json({ message: 'تمت الطباعة' }); }
+      });
+      socket.on('error', (e) => {
+        if (!responded) { responded = true; res.status(500).json({ error: 'فشل الاتصال بالطابعة: ' + e.message }); }
+      });
+      socket.on('timeout', () => {
+        socket.destroy();
+        if (!responded) { responded = true; res.status(500).json({ error: 'انتهت مهلة الاتصال بالطابعة' }); }
+      });
+    }
+  );
+});
+
+/* =========================
    تشغيل السيرفر
 ========================= */
 app.post('/login', (req, res) => {
