@@ -136,6 +136,12 @@
 - [x] **Logs #3** — Replaced "مسح الفلتر" button with "🗑 مسح كل السجل": shows Arabic confirmation, calls `DELETE /logs/all`, reloads table. Old `clearLogsFilter()` replaced with `async clearAllLogs()`. `frontend/developer.html`
 - [x] **Logs #4** — `DELETE /logs/all` route: inline admin/developer guard, deletes all rows from `logs` table, writes `logAction('مسح سجلات', 'ALL')`. `index.js`
 
+## Invoice print — thermal printer overhaul (2026-06-17)
+
+- [x] **Print #1** — Checkout invoice changed from 2 copies to 1 copy: removed `copyHtml()` helper and page-break duplication from `openInvoiceTwoCopies()`. No "نسخة العميل" / "نسخة المحل" labels. `frontend/app.js`
+- [x] **Print #2** — `INVOICE_STYLE` fully replaced for 58mm thermal printer: `table-layout: fixed`, column widths 30/10/18/42% (المنتج/الكمية/السعر/المجموع), `9px` cell font, `white-space: nowrap` + `text-overflow: ellipsis`, `@page { size: 58mm auto; margin: 0 }`, `body` at `56mm` with `padding: 0 1mm`. `frontend/app.js`
+- [x] **Print #3** — ESC/POS backend route: installed `escpos` npm package; added `buildEscPosBuffer()` generating raw ESC/POS bytes (init, alignment, bold, separator, items, cut); added `POST /print/receipt` (requireCashier) sending bytes via TCP `net.Socket` to `printer_ip`:`printer_port` from settings table. `index.js` + `package.json`
+
 ## Suppliers payment form (2026-06-12)
 
 - [x] **Suppliers Pay #1** — Added `paySupplierSelect` to payment panel with `onPaySupplierChange()` handler; `renderSuppliers()` now populates all three supplier dropdowns in sync. `suppliers.html` + `suppliers.js`

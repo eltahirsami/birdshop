@@ -1,30 +1,33 @@
 # Current Session
 
-**Date:** 2026-06-16
+**Date:** 2026-06-17
 **Status:** Session closed ✅
 
 ## Summary
 
-Three commits to `main` on the developer panel activity log section.
+Invoice print system overhaul for 58mm thermal printer. ESC/POS backend route added. Multiple CSS iterations on `INVOICE_STYLE` in `frontend/app.js`.
 
-### Developer logs – clear button overhaul
+---
 
-- **Fix #1** — `loadLogs()` called `renderLogs(allLogs)` directly, ignoring any active filter. Auto-refresh (every 60 s) would override the user's filter while the dropdown still showed the selected value, making the button appear broken. Changed last line of `loadLogs()` from `renderLogs(allLogs)` → `filterLogs()` so refreshes respect the current filter state. `frontend/developer.html`
+### Invoice print — 1 copy only
+- Removed two-copy logic from `openInvoiceTwoCopies()`: deleted `copyHtml()` helper and page-break duplication. Single copy prints with no label. `frontend/app.js`
 
-- **Fix #2** — `clearLogsFilter()` called `renderLogs(allLogs)` (re-renders stale in-memory data, no visible change when table was already showing all logs). Changed to `loadLogs()` so clicking clear fetches fresh server data and re-renders. `frontend/developer.html`
+### INVOICE_STYLE — thermal print CSS rewrite
+- Replaced old 80mm style with clean 58mm thermal CSS: compact font sizes (12px→10px body, 11px headers), `@page { size: 58mm auto; margin: 0 }`, `table-layout: fixed` with explicit column widths (30/10/18/42% for المنتج/الكمية/السعر/المجموع). `frontend/app.js`
+- Several intermediate iterations (58mm↔56mm width, margin-right, fit-content, fixed vs auto layout) were tried and partially reverted during the session — final state is the clean replacement below.
 
-- **Feature** — Replaced "مسح الفلتر" button entirely with "🗑 مسح كل السجل":
-  - Shows Arabic confirmation `هل تريد مسح كل سجل الأحداث؟` before deleting
-  - Calls `DELETE /logs/all` (new route)
-  - Reloads logs table after deletion via `loadLogs()`
-  - Old `clearLogsFilter()` removed; replaced with `async clearAllLogs()`
-  - `frontend/developer.html` + `index.js`
+**Final `INVOICE_STYLE` state:**
+- `*` — `box-sizing: border-box` only (no overflow/word-wrap on `*`)
+- `body` — `width: 56mm`, `font-size: 10px`, `direction: rtl`, `margin: 0 auto`, `padding: 0 1mm`
+- `table` — `table-layout: fixed`
+- `th, td` — `9px`, `white-space: nowrap`, `text-overflow: ellipsis`, `overflow: hidden`
+- Columns: 30% / 10% / 18% / 42%
+- `@page { size: 58mm auto; margin: 0 }`, `body { width: 56mm }` in `@media print`
 
-- **Route** — `DELETE /logs/all` added to `index.js` after `GET /developer/logs`:
-  - Inline role guard: allows `admin` and `developer` only (no new middleware)
-  - Deletes all rows from `logs` table
-  - Writes `logAction(..., 'مسح سجلات', 'ALL')` after deletion
-  - `index.js`
+### ESC/POS thermal print route
+- Installed `escpos` npm package (`npm install escpos --save`). `package.json`
+- Added `buildEscPosBuffer(data)` — builds raw ESC/POS byte buffer: init, center/bold shop name, phone, separator, invoice number + date, item list (name + qty × price = total), bold total, 3-line feed, partial cut. `index.js`
+- Added `POST /print/receipt` route (requireCashier): reads `printer_ip` and `printer_port` from `settings` table, sends buffer via TCP `net.Socket` (default port 9100), 5-second timeout. Returns Arabic error if `printer_ip` not configured. `index.js`
 
 ## Next session should
 
