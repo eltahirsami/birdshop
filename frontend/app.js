@@ -15,16 +15,18 @@ let invoicesFrom = ''
 let invoicesTo = ''
 
 const INVOICE_STYLE = `
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; width: 58mm; font-size: 12px; color: #000; background: #fff; direction: rtl; }
+  * { margin: 0; padding: 0; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; }
+  body { font-family: Arial, sans-serif; width: 58mm; font-size: 10px; color: #000; background: #fff; direction: rtl; }
   .shop-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 4px; }
-  .shop-name { font-size: 13px; font-weight: bold; }
-  .shop-info { font-size: 11px; }
-  h2, h3 { text-align: center; font-size: 13px; margin: 4px 0; }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { padding: 3px 2px; text-align: right; font-size: 11px; border-bottom: 1px dashed #000; }
+  .shop-name { font-size: 11px; font-weight: bold; }
+  .shop-info { font-size: 10px; }
+  h2, h3 { text-align: center; font-size: 11px; margin: 4px 0; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  th, td { padding: 2px 1px; text-align: right; font-size: 10px; border-bottom: 1px dashed #000; word-wrap: break-word; overflow-wrap: break-word; }
+  th:first-child, td:first-child { width: 40%; }
+  th:not(:first-child), td:not(:first-child) { width: 20%; }
   .separator { border-top: 1px dashed #000; margin: 4px 0; }
-  .footer { text-align: center; font-size: 11px; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; }
+  .footer { text-align: center; font-size: 10px; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; }
   @media print {
     @page { size: 58mm auto; margin: 0; }
     body { width: 58mm; }
