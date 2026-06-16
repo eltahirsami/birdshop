@@ -16,7 +16,7 @@ let invoicesTo = ''
 
 const INVOICE_STYLE = `
   * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; background: #fff !important; box-shadow: none !important; }
-  body { font-family: Arial, sans-serif; width: 80mm; font-size: 13px; color: #000; background: #fff; direction: rtl; }
+  body { font-family: Arial, sans-serif; width: 80mm; font-size: 13px; color: #000; background: #fff; direction: rtl; height: fit-content; }
   .shop-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 6px; margin-bottom: 6px; }
   .shop-name { font-size: 14px; font-weight: bold; }
   .shop-info { font-size: 12px; }
@@ -27,7 +27,8 @@ const INVOICE_STYLE = `
   .footer { text-align: center; font-size: 12px; margin-top: 8px; border-top: 1px dashed #000; padding-top: 5px; }
   @media print {
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: auto !important; }
+    body { height: fit-content !important; }
+    html { height: fit-content !important; }
     @page { margin: 0; size: 58mm auto; }
     body { width: 58mm; font-size: 13px; font-family: Arial, sans-serif; direction: rtl; color: black; background: white; }
     table { width: 100%; border-collapse: collapse; }
