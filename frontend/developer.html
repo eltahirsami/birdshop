@@ -537,7 +537,7 @@ function filterLogs() {
 function clearLogsFilter() {
   document.getElementById('filterUser').value = ''
   document.getElementById('filterAction').value = ''
-  renderLogs(allLogs)
+  loadLogs()
 }
 
 function renderLogs(logs) {
