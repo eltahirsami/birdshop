@@ -21,9 +21,9 @@ const INVOICE_STYLE = `
   .shop-name { font-size: 11px; font-weight: bold; }
   .shop-info { font-size: 10px; }
   h2, h3 { text-align: center; font-size: 11px; margin: 4px 0; }
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  th, td { padding: 2px 1px; text-align: right; font-size: 10px; border-bottom: 1px dashed #000; word-wrap: break-word; overflow-wrap: break-word; }
-  th:first-child, td:first-child { width: 40%; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 2px 1px; text-align: right; font-size: 10px; border-bottom: 1px dashed #000; word-wrap: break-word; overflow-wrap: break-word; padding-right: 2px; }
+  th:first-child, td:first-child { width: auto; }
   th:not(:first-child), td:not(:first-child) { width: 20%; }
   .separator { border-top: 1px dashed #000; margin: 4px 0; }
   .footer { text-align: center; font-size: 10px; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; }
