@@ -111,3 +111,32 @@
 - [x] **Build #2** — `package.json`: `win.icon: "skybird.ico"` added to build config.
 - [x] **Build #3** — `skybird.ico` was a directory (file nested one level too deep) — extracted and regenerated as proper 256×256 ICO from `skybird-logo.png.jpeg` via PowerShell `System.Drawing`.
 - [x] **Build #4** — App startup hang fix: replaced `spawn(node, [index.js])` with `require('./index.js')` in Electron main process. Root cause: `bcrypt` ABI-specific prebuilt not matching Electron's Node.js ABI with `npmRebuild: false` — server crashed silently, loading screen hung forever. In-process execution uses the same runtime, eliminating all ABI mismatches. Added `server.log` file logging and 15-second error timeout with Arabic error page. `main.js`
+
+## Pagination (2026-06-12)
+
+- [x] **Pagination #1** — Sales history page size 50 → 5: added `limit: 5` to URL params in `loadSalesHistory()`; fixed `Math.ceil(total / 50)` → `Math.ceil(total / 5)`. `frontend/app.js`
+- [x] **Pagination #2** — Invoices page size 50 → 5: same two changes in `loadInvoices()`. `frontend/app.js`
+
+## Backup system (2026-06-12)
+
+- [x] **Backup #1** — `backup.bat`: replaced rclone/Google Drive with local copy to `C:\SkyBird-Backup\`; timestamped filename `birdshop_YYYY-MM-DD_HH-MM.db`; auto-deletes oldest files to keep last 10. `backend/backup.bat`
+- [x] **Backup #2** — `/developer/backup-now` route: same destination and filename format as backup.bat; reads `C:\SkyBird-Backup\`, sorts files, deletes oldest beyond 10 after each manual backup. `index.js`
+
+## Sales & invoice UI fixes (2026-06-12)
+
+- [x] **Sales #1** — Backend pagination limit ignored: `/sales/history` and `/sales/invoices` had `const limit = 50` hardcoded — changed to `parseInt(req.query.limit) || 50` so `?limit=5` from the frontend is respected. `index.js`
+- [x] **Sales #2** — Invoice table print button: `openInvoice()` never called `win.print()` — added `setTimeout(() => win.print(), 500)` after `win.document.close()`. `frontend/app.js`
+- [x] **Sales #3** — Auto-print after checkout: `checkout()` called `printInvoice()` which has no `win.print()`; replaced with `openInvoice(invoiceNumber)`. `frontend/app.js`
+- [x] **Sales #4** — Two invoice copies on checkout: added `openInvoiceTwoCopies(number)` — fetches invoice, renders "نسخة العميل" + "نسخة المحل" with `page-break-after:always` in one window; `checkout()` calls this. `frontend/app.js`
+
+## Developer logs – clear button (2026-06-16)
+
+- [x] **Logs #1** — `loadLogs()` auto-refresh ignored active filter: changed last line from `renderLogs(allLogs)` → `filterLogs()` so 60-second refresh preserves the current dropdown selection. `frontend/developer.html`
+- [x] **Logs #2** — `clearLogsFilter()` called `renderLogs(allLogs)` (stale in-memory data, no visible effect): changed to `loadLogs()` so clearing fetches fresh data from server. `frontend/developer.html`
+- [x] **Logs #3** — Replaced "مسح الفلتر" button with "🗑 مسح كل السجل": shows Arabic confirmation, calls `DELETE /logs/all`, reloads table. Old `clearLogsFilter()` replaced with `async clearAllLogs()`. `frontend/developer.html`
+- [x] **Logs #4** — `DELETE /logs/all` route: inline admin/developer guard, deletes all rows from `logs` table, writes `logAction('مسح سجلات', 'ALL')`. `index.js`
+
+## Suppliers payment form (2026-06-12)
+
+- [x] **Suppliers Pay #1** — Added `paySupplierSelect` to payment panel with `onPaySupplierChange()` handler; `renderSuppliers()` now populates all three supplier dropdowns in sync. `suppliers.html` + `suppliers.js`
+- [x] **Suppliers Pay #2** — Per-invoice balance: added `lastPayments` module var (populated in `loadPayments()`); `getInvoiceRemaining(id)` computes `invoice.total − Σ payments`; `renderPayPurchaseSelect()` filters out fully-paid invoices and shows "متبقي: X"; `onPayPurchaseChange()` updates `payRemaining` on selection; `refreshSupplier()` calls `renderPayPurchaseSelect()` after `loadPayments()` so balances are always fresh. `suppliers.js` + `suppliers.html`
