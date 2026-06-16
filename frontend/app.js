@@ -15,23 +15,19 @@ let invoicesFrom = ''
 let invoicesTo = ''
 
 const INVOICE_STYLE = `
-  * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; background: #fff !important; box-shadow: none !important; }
-  body { font-family: Arial, sans-serif; width: 80mm; font-size: 13px; color: #000; background: #fff; direction: rtl; }
-  .shop-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 6px; margin-bottom: 6px; }
-  .shop-name { font-size: 14px; font-weight: bold; }
-  .shop-info { font-size: 12px; }
-  h2, h3 { text-align: center; font-size: 14px; margin: 6px 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; width: 58mm; font-size: 12px; color: #000; background: #fff; direction: rtl; }
+  .shop-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 4px; }
+  .shop-name { font-size: 13px; font-weight: bold; }
+  .shop-info { font-size: 11px; }
+  h2, h3 { text-align: center; font-size: 13px; margin: 4px 0; }
   table { width: 100%; border-collapse: collapse; }
-  th, td { padding: 4px 2px; text-align: right; font-size: 12px; border-bottom: 1px dashed #000; }
-  .separator { border-top: 1px dashed #000; margin: 6px 0; }
-  .footer { text-align: center; font-size: 12px; margin-top: 8px; border-top: 1px dashed #000; padding-top: 5px; }
+  th, td { padding: 3px 2px; text-align: right; font-size: 11px; border-bottom: 1px dashed #000; }
+  .separator { border-top: 1px dashed #000; margin: 4px 0; }
+  .footer { text-align: center; font-size: 11px; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; }
   @media print {
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { width: 80mm; font-size: 13px; font-family: Arial, sans-serif; direction: rtl; color: black; background: white; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 4px 2px; text-align: right; font-size: 12px; }
-    .separator { border-top: 1px dashed black; margin: 6px 0; }
-    h2, h3 { text-align: center; font-size: 14px; }
+    @page { size: 58mm auto; margin: 0; }
+    body { width: 58mm; }
   }
 `
 
