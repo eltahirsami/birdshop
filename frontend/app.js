@@ -27,7 +27,7 @@ const INVOICE_STYLE = `
   .footer { text-align: center; font-size: 12px; margin-top: 8px; border-top: 1px dashed #000; padding-top: 5px; }
   @media print {
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { width: 80mm; font-size: 13px; font-family: Arial, sans-serif; direction: rtl; color: black; background: white; }
+    body { width: 58mm; font-size: 13px; font-family: Arial, sans-serif; direction: rtl; color: black; background: white; }
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 4px 2px; text-align: right; font-size: 12px; }
     .separator { border-top: 1px dashed black; margin: 6px 0; }
