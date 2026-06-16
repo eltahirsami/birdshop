@@ -918,24 +918,18 @@ async function openInvoiceTwoCopies(number) {
     rows += `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${price}</td><td>${sum}</td></tr>`
   })
 
-  const copyHtml = (title, pageBreak) => `
-    <div${pageBreak ? ' style="page-break-after:always"' : ''}>
-      ${buildShopHeader()}
-      <h2>فاتورة بيع</h2>
-      <p style="text-align:center;font-weight:bold;font-size:13px;">${title}</p>
-      <p>رقم الفاتورة : ${data.invoice_number}</p>
-      <p>التاريخ : ${new Date(data.date).toLocaleString()}</p>
-      <table><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>${rows}</table>
-      <h3>الإجمالي : ${total}</h3>
-      <div class="footer">شكراً لزيارتكم — نتمنى لكم تجربة ممتعة</div>
-    </div>
-  `
-
   const html = `
     <html dir="rtl"><head><title>فاتورة</title><style>${INVOICE_STYLE}</style></head>
     <body>
-      ${copyHtml('نسخة العميل', true)}
-      ${copyHtml('نسخة المحل', false)}
+      <div>
+        ${buildShopHeader()}
+        <h2>فاتورة بيع</h2>
+        <p>رقم الفاتورة : ${data.invoice_number}</p>
+        <p>التاريخ : ${new Date(data.date).toLocaleString()}</p>
+        <table><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>${rows}</table>
+        <h3>الإجمالي : ${total}</h3>
+        <div class="footer">شكراً لزيارتكم — نتمنى لكم تجربة ممتعة</div>
+      </div>
     </body></html>
   `
 
