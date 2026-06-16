@@ -522,7 +522,7 @@ async function loadLogs() {
   userSelect.innerHTML = '<option value="">كل المستخدمين</option>' +
     users.map(u => '<option value="' + u + '"' + (currentVal === u ? ' selected' : '') + '>' + u + '</option>').join('')
 
-  renderLogs(allLogs)
+  filterLogs()
 }
 
 function filterLogs() {
