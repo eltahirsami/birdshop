@@ -15,8 +15,8 @@ let invoicesFrom = ''
 let invoicesTo = ''
 
 const INVOICE_STYLE = `
-  * { margin: 0; padding: 0; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; }
-  body { font-family: Arial, sans-serif; width: 58mm; font-size: 10px; color: #000; background: #fff; direction: rtl; }
+  * { margin: 0; padding: 0; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; overflow: visible; }
+  body { font-family: Arial, sans-serif; width: 54mm; margin-right: 3mm; font-size: 10px; color: #000; background: #fff; direction: rtl; }
   .shop-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 4px; }
   .shop-name { font-size: 11px; font-weight: bold; }
   .shop-info { font-size: 10px; }
