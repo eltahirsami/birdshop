@@ -15,17 +15,24 @@ let invoicesFrom = ''
 let invoicesTo = ''
 
 const INVOICE_STYLE = `
-  * { color: #000 !important; background: #fff !important; box-shadow: none !important; }
-  body { font-family: Arial, sans-serif; width: 80mm; margin: 0; padding: 5px; font-size: 14px; color: #000; background: #fff; }
-  .shop-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; background: #fff !important; box-shadow: none !important; }
+  body { font-family: Arial, sans-serif; width: 80mm; font-size: 13px; color: #000; background: #fff; direction: rtl; }
+  .shop-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 6px; margin-bottom: 6px; }
   .shop-name { font-size: 14px; font-weight: bold; }
-  .shop-info { font-size: 14px; }
-  h2 { text-align: center; font-size: 14px; margin: 8px 0; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { border-bottom: 1px dashed #000; padding: 4px; text-align: center; }
-  h3 { text-align: center; margin-top: 10px; font-size: 14px; }
-  .footer { text-align: center; font-size: 14px; margin-top: 10px; border-top: 1px dashed #000; padding-top: 5px; }
-  @media print { body { width: 80mm; } }
+  .shop-info { font-size: 12px; }
+  h2, h3 { text-align: center; font-size: 14px; margin: 6px 0; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 4px 2px; text-align: right; font-size: 12px; border-bottom: 1px dashed #000; }
+  .separator { border-top: 1px dashed #000; margin: 6px 0; }
+  .footer { text-align: center; font-size: 12px; margin-top: 8px; border-top: 1px dashed #000; padding-top: 5px; }
+  @media print {
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { width: 80mm; font-size: 13px; font-family: Arial, sans-serif; direction: rtl; color: black; background: white; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 4px 2px; text-align: right; font-size: 12px; }
+    .separator { border-top: 1px dashed black; margin: 6px 0; }
+    h2, h3 { text-align: center; font-size: 14px; }
+  }
 `
 
 let settingsInvoiceTitle = ''
