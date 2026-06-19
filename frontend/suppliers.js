@@ -478,10 +478,10 @@ async function printSupplierStatement() {
           table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 9px; }
           th, td { padding: 2px 1px; text-align: right; border-bottom: 1px dashed #000; word-wrap: break-word; }
           th:nth-child(1), td:nth-child(1) { width: 22%; }
-          th:nth-child(2), td:nth-child(2) { width: 28%; }
+          th:nth-child(2), td:nth-child(2) { width: 24%; }
           th:nth-child(3), td:nth-child(3) { width: 17%; }
           th:nth-child(4), td:nth-child(4) { width: 17%; }
-          th:nth-child(5), td:nth-child(5) { width: 16%; }
+          th:nth-child(5), td:nth-child(5) { width: 20%; }
           .total { text-align: center; font-size: 13px; font-weight: bold; margin: 6px 0; }
           .footer { text-align: center; font-size: 10px; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; }
         </style></head>
