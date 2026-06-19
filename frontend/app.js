@@ -16,13 +16,13 @@ let invoicesTo = ''
 
 const INVOICE_STYLE = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; width: 56mm; font-size: 10px; color: #000; background: #fff; direction: rtl; margin: 0 auto; padding: 0 1mm; }
+  body { font-family: Arial, sans-serif; width: 56mm; font-size: 12px; color: #000; background: #fff; direction: rtl; margin: 0 auto; padding: 0 3mm 2mm 1mm; }
   .shop-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 4px; }
-  .shop-name { font-size: 12px; font-weight: bold; }
+  .shop-name { font-size: 14px; font-weight: bold; }
   .shop-info { font-size: 10px; }
-  h2, h3 { text-align: center; font-size: 11px; margin: 4px 0; }
+  h2, h3 { text-align: center; font-size: 13px; margin: 4px 0; }
   table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  th, td { padding: 2px 1px; font-size: 9px; border-bottom: 1px dashed #000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  th, td { padding: 2px 1px; font-size: 11px; border-bottom: 1px dashed #000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   th:nth-child(1), td:nth-child(1) { width: 30%; text-align: right; }
   th:nth-child(2), td:nth-child(2) { width: 10%; text-align: center; }
   th:nth-child(3), td:nth-child(3) { width: 18%; text-align: center; }
