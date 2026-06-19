@@ -475,13 +475,13 @@ async function printSupplierStatement() {
         <head><title>كشف حساب مورد</title><style>
           body { font-family: Arial, sans-serif; width: 58mm; font-size: 11px; color: #000; background: #fff; direction: rtl; margin: 0 auto; padding: 0 2mm; }
           @media print { @page { size: 58mm auto; margin: 0; } body { width: 58mm; } }
-          table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 9px; }
+          table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 8px; }
           th, td { padding: 2px 1px; text-align: right; border-bottom: 1px dashed #000; word-wrap: break-word; }
-          th:nth-child(1), td:nth-child(1) { width: 22%; }
-          th:nth-child(2), td:nth-child(2) { width: 24%; }
-          th:nth-child(3), td:nth-child(3) { width: 17%; }
-          th:nth-child(4), td:nth-child(4) { width: 17%; }
-          th:nth-child(5), td:nth-child(5) { width: 20%; }
+          th:nth-child(1), td:nth-child(1) { width: 18%; }
+          th:nth-child(2), td:nth-child(2) { width: 22%; }
+          th:nth-child(3), td:nth-child(3) { width: 18%; }
+          th:nth-child(4), td:nth-child(4) { width: 18%; }
+          th:nth-child(5), td:nth-child(5) { width: 24%; }
           .total { text-align: center; font-size: 13px; font-weight: bold; margin: 6px 0; }
           .footer { text-align: center; font-size: 10px; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; }
         </style></head>
