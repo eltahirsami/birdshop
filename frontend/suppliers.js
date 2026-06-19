@@ -16,15 +16,18 @@ function money(x) {
 }
 
 const PRINT_STYLE = `
-  body { font-family:tahoma; width:80mm; margin:0; padding:6px; }
-  .header { text-align:center; border-bottom:2px dashed #000; padding-bottom:8px; margin-bottom:8px; }
-  .title { font-size:16px; font-weight:bold; margin:0; }
-  .sub { font-size:11px; color:#555; margin:2px 0; }
-  h2 { text-align:center; font-size:13px; margin:8px 0; }
-  table { width:100%; border-collapse:collapse; font-size:12px; }
-  th,td { border-bottom:1px dashed #000; padding:4px; text-align:center; }
-  .tot { text-align:center; font-size:14px; font-weight:bold; margin-top:10px; }
-  .footer { text-align:center; font-size:10px; color:#777; margin-top:10px; border-top:1px dashed #000; padding-top:6px; }
+  body { font-family: Arial, sans-serif; width: 58mm; font-size: 12px; color: #000; background: #fff; direction: rtl; margin: 0 auto; padding: 0 2mm; }
+  @media print { @page { size: 58mm auto; margin: 0; } body { width: 58mm; } }
+  h3 { text-align: center; font-size: 13px; margin: 4px 0; }
+  p { font-size: 11px; margin: 2px 0; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 10px; }
+  th, td { padding: 2px 1px; text-align: right; border-bottom: 1px dashed #000; word-wrap: break-word; }
+  th:nth-child(1), td:nth-child(1) { width: 35%; }
+  th:nth-child(2), td:nth-child(2) { width: 15%; }
+  th:nth-child(3), td:nth-child(3) { width: 20%; }
+  th:nth-child(4), td:nth-child(4) { width: 30%; }
+  .total { text-align: center; font-size: 13px; font-weight: bold; margin: 6px 0; }
+  .footer { text-align: center; font-size: 10px; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; }
 `
 
 function clearPurchasesPaginationUi() {
@@ -517,19 +520,20 @@ async function viewPurchase(purchaseId) {
       <html dir="rtl">
         <head><title>فاتورة مورد</title><style>${PRINT_STYLE}</style></head>
         <body>
-          <div class="header">
-            <p class="title">فاتورة مورد</p>
-            ${supplierName ? `<div class="sub">المورد: ${supplierName}</div>` : ''}
-            <div class="sub">رقم الفاتورة: ${p.invoice_number || p.id}</div>
-            ${p.invoice_date ? `<div class="sub">تاريخ الفاتورة: ${p.invoice_date}</div>` : ''}
-            <div class="sub">تاريخ الإدخال: ${p.created_at ? new Date(p.created_at).toLocaleString('ar') : ''}</div>
-            ${p.notes ? `<div class="sub">ملاحظات: ${p.notes}</div>` : ''}
+          <div style="text-align:center;border-bottom:1px dashed #000;padding-bottom:4px;margin-bottom:6px;">
+            <div style="font-size:14px;font-weight:bold;">SKY BIRD</div>
+            <div style="font-size:11px;font-weight:bold;">فاتورة مورد</div>
           </div>
+          ${supplierName ? `<p>المورد: ${supplierName}</p>` : ''}
+          <p>رقم الفاتورة: ${p.invoice_number || p.id}</p>
+          ${p.invoice_date ? `<p>تاريخ الفاتورة: ${p.invoice_date}</p>` : ''}
+          <p>تاريخ الإدخال: ${p.created_at ? new Date(p.created_at).toLocaleString('ar') : ''}</p>
+          ${p.notes ? `<p>ملاحظات: ${p.notes}</p>` : ''}
           <table>
             <tr><th>المنتج</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th></tr>
             ${rows}
           </table>
-          <div class="tot">الإجمالي: ${money(total)}</div>
+          <div class="total">الإجمالي: ${money(total)}</div>
           <div class="footer">حسابات الموردين</div>
           <div style="text-align:center;margin-top:10px;">
             <button onclick="window.print()" style="padding:6px 12px;border:none;border-radius:8px;background:#2980b9;color:#fff;font-family:tahoma;cursor:pointer">طباعة</button>
