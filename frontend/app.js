@@ -1360,7 +1360,7 @@ async function printDailyReport() {
     <head>
       <title>تقرير اليوم</title>
       <style>
-        body { font-family: Arial, sans-serif; width: 58mm; font-size: 11px; color: #000; background: #fff; direction: rtl; margin: 0 auto; text-align: right; padding: 0 1mm; }
+        body { font-family: Arial, sans-serif; width: 58mm; font-size: 11px; color: #000; background: #fff; direction: rtl; margin: 0 auto; text-align: right; padding: 0 4mm 0 0; }
         @media print { @page { size: 58mm auto; margin: 0; } body { width: 58mm; } }
         .header { text-align:center; border-bottom:2px dashed #000; padding-bottom:6px; margin-bottom:6px; }
         .shop-name { font-size:16px; font-weight:bold; }
