@@ -462,7 +462,6 @@ async function printSupplierStatement() {
     const rows = txns.map(t => {
       balance += t.debit - t.credit
       return `<tr>
-        <td>${t.displayDate}</td>
         <td>${t.label}</td>
         <td>${t.debit ? money(t.debit) : ''}</td>
         <td>${t.credit ? money(t.credit) : ''}</td>
@@ -477,11 +476,10 @@ async function printSupplierStatement() {
           @media print { @page { size: 58mm auto; margin: 0; } body { width: 58mm; } }
           table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 8px; }
           th, td { padding: 2px 1px; text-align: right; border-bottom: 1px dashed #000; word-wrap: break-word; }
-          th:nth-child(1), td:nth-child(1) { width: 18%; }
-          th:nth-child(2), td:nth-child(2) { width: 22%; }
-          th:nth-child(3), td:nth-child(3) { width: 18%; }
-          th:nth-child(4), td:nth-child(4) { width: 18%; }
-          th:nth-child(5), td:nth-child(5) { width: 24%; }
+          th:nth-child(1), td:nth-child(1) { width: 32%; }
+          th:nth-child(2), td:nth-child(2) { width: 23%; }
+          th:nth-child(3), td:nth-child(3) { width: 23%; }
+          th:nth-child(4), td:nth-child(4) { width: 22%; }
           .total { text-align: center; font-size: 13px; font-weight: bold; margin: 6px 0; }
           .footer { text-align: center; font-size: 10px; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; }
         </style></head>
@@ -495,8 +493,8 @@ async function printSupplierStatement() {
           ${sp?.address ? `<p style="font-size:11px;margin:2px 0;">العنوان: ${sp.address}</p>` : ''}
           <p style="font-size:11px;margin:2px 0;">التاريخ: ${new Date().toLocaleDateString('ar')}</p>
           <table>
-            <tr><th>التاريخ</th><th>البيان</th><th>مشتريات</th><th>مدفوع</th><th>الرصيد</th></tr>
-            ${rows || `<tr><td colspan="5">لا توجد معاملات</td></tr>`}
+            <tr><th>البيان</th><th>مشتريات</th><th>مدفوع</th><th>الرصيد</th></tr>
+            ${rows || `<tr><td colspan="4">لا توجد معاملات</td></tr>`}
           </table>
           <div class="total">الرصيد المتبقي: ${money(summary.remaining)}</div>
           <div class="footer">كشف حساب الموردين — ${new Date().toLocaleDateString('ar')}</div>
