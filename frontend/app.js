@@ -16,17 +16,17 @@ let invoicesTo = ''
 
 const INVOICE_STYLE = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; width: 56mm; font-size: 12px; color: #000; background: #fff; direction: rtl; margin: 0 auto; padding: 0 2mm 0 0; }
+  body { font-family: Arial, sans-serif; width: 56mm; font-size: 12px; color: #000; background: #fff; direction: rtl; margin: 0 auto; padding: 0 3mm 2mm 1mm; }
   .shop-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 4px; }
   .shop-name { font-size: 14px; font-weight: bold; }
   .shop-info { font-size: 10px; }
   h2, h3 { text-align: center; font-size: 13px; margin: 4px 0; }
   table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   th, td { padding: 2px 1px; font-size: 11px; border-bottom: 1px dashed #000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  th:nth-child(1), td:nth-child(1) { width: 32%; text-align: right; }
-  th:nth-child(2), td:nth-child(2) { width: 13%; text-align: center; }
-  th:nth-child(3), td:nth-child(3) { width: 20%; text-align: center; }
-  th:nth-child(4), td:nth-child(4) { width: 35%; text-align: center; }
+  th:nth-child(1), td:nth-child(1) { width: 30%; text-align: right; }
+  th:nth-child(2), td:nth-child(2) { width: 10%; text-align: center; }
+  th:nth-child(3), td:nth-child(3) { width: 18%; text-align: center; }
+  th:nth-child(4), td:nth-child(4) { width: 42%; text-align: center; }
   .separator { border-top: 1px dashed #000; margin: 4px 0; }
   .footer { text-align: center; font-size: 9px; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; }
   @media print {
