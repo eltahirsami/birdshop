@@ -473,22 +473,32 @@ async function printSupplierStatement() {
     const html = `
       <html dir="rtl">
         <head><title>كشف حساب مورد</title><style>
-          ${PRINT_STYLE}
-          body { width:130mm; }
+          body { font-family: Arial, sans-serif; width: 58mm; font-size: 11px; color: #000; background: #fff; direction: rtl; margin: 0 auto; padding: 0 2mm; }
+          @media print { @page { size: 58mm auto; margin: 0; } body { width: 58mm; } }
+          table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 9px; }
+          th, td { padding: 2px 1px; text-align: right; border-bottom: 1px dashed #000; word-wrap: break-word; }
+          th:nth-child(1), td:nth-child(1) { width: 22%; }
+          th:nth-child(2), td:nth-child(2) { width: 28%; }
+          th:nth-child(3), td:nth-child(3) { width: 17%; }
+          th:nth-child(4), td:nth-child(4) { width: 17%; }
+          th:nth-child(5), td:nth-child(5) { width: 16%; }
+          .total { text-align: center; font-size: 13px; font-weight: bold; margin: 6px 0; }
+          .footer { text-align: center; font-size: 10px; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; }
         </style></head>
         <body>
-          <div class="header">
-            <p class="title">كشف حساب مورد</p>
-            <div class="sub">المورد: ${sp?.name || ''}</div>
-            ${sp?.phone ? `<div class="sub">الهاتف: ${sp.phone}</div>` : ''}
-            ${sp?.address ? `<div class="sub">العنوان: ${sp.address}</div>` : ''}
-            <div class="sub">التاريخ: ${new Date().toLocaleDateString('ar')}</div>
+          <div style="text-align:center;border-bottom:1px dashed #000;padding-bottom:4px;margin-bottom:6px;">
+            <div style="font-size:14px;font-weight:bold;">🦜 SKY BIRD</div>
+            <div style="font-size:11px;font-weight:bold;">كشف حساب مورد</div>
           </div>
+          <p style="font-size:11px;margin:2px 0;">المورد: ${sp?.name || ''}</p>
+          ${sp?.phone ? `<p style="font-size:11px;margin:2px 0;">الهاتف: ${sp.phone}</p>` : ''}
+          ${sp?.address ? `<p style="font-size:11px;margin:2px 0;">العنوان: ${sp.address}</p>` : ''}
+          <p style="font-size:11px;margin:2px 0;">التاريخ: ${new Date().toLocaleDateString('ar')}</p>
           <table>
             <tr><th>التاريخ</th><th>البيان</th><th>مشتريات</th><th>مدفوع</th><th>الرصيد</th></tr>
             ${rows || `<tr><td colspan="5">لا توجد معاملات</td></tr>`}
           </table>
-          <div class="tot">الرصيد المتبقي: ${money(summary.remaining)}</div>
+          <div class="total">الرصيد المتبقي: ${money(summary.remaining)}</div>
           <div class="footer">كشف حساب الموردين — ${new Date().toLocaleDateString('ar')}</div>
           <div style="text-align:center;margin-top:10px;">
             <button onclick="window.print()" style="padding:6px 12px;border:none;border-radius:8px;background:#2980b9;color:#fff;font-family:tahoma;cursor:pointer">طباعة</button>
