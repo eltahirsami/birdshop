@@ -8,6 +8,10 @@
 | session-4 | 2026-06-05 | Suppliers screen bug fixes | Fixed all 7 suppliers bugs: pagination upper bound, payPurchaseSelect stale state, unitCost=0, duplicate draft product, payment exceeds balance, date picker, save confirmation |
 | session-5 | 2026-06-05 | Suppliers "عرض" button | viewPurchase now opens a print popup with full invoice, line items, and print button |
 | session-6 | 2026-06-05 | Suppliers payment history + statement | Payment history list under totals (left panel); "كشف حساب" print popup with running balance |
+| session-7 | 2026-06-11 | WhatsApp QR + Electron build + startup fix | QR on main page; icon + naming; in-process server fixes ABI hang |
+| session-8 | 2026-06-12 | Pagination page size | Sales history + invoices page size 50 → 5 |
+| session-9 | 2026-06-12 | Local backup system | backup.bat + /developer/backup-now → C:\SkyBird-Backup\, timestamped, keep last 10 |
+| session-10 | 2026-06-12 | Sales UI + suppliers payment form | Pagination limit bug, print dialog fixes, 2-copy checkout invoice, supplier pay dropdown, per-invoice balance |
 
 ## How to start a new session
 
