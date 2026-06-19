@@ -16,7 +16,7 @@ let invoicesTo = ''
 
 const INVOICE_STYLE = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; width: 56mm; font-size: 12px; color: #000; background: #fff; direction: rtl; margin: 0 auto; padding: 0 3mm 2mm 1mm; }
+  body { font-family: Arial, sans-serif; width: 56mm; font-size: 12px; color: #000; background: #fff; direction: rtl; margin: 0 0 0 auto; padding: 0 0 0 2mm; }
   .shop-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 4px; }
   .shop-name { font-size: 14px; font-weight: bold; }
   .shop-info { font-size: 10px; }
