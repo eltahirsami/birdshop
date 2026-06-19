@@ -1388,13 +1388,13 @@ async function printDailyReport() {
       <h2>📊 تقرير اليوم</h2>
       <p style="text-align:center;font-size:11px;">${date}</p>
 
-      <table class="summary">
-        <tr><td>إجمالي المبيعات</td><td>${stats.totalRevenue} ر.ق</td></tr>
-        <tr><td>إجمالي الأرباح</td><td>${profit.profit} ر.ق</td></tr>
-        <tr><td>عدد القطع</td><td>${stats.totalItems}</td></tr>
-        <tr><td>عدد الفواتير</td><td>${todayInvoices.length}</td></tr>
-        <tr><td>الأكثر مبيعاً</td><td>${stats.topProduct}</td></tr>
-      </table>
+      <div class="summary">
+        <div style="display:flex; justify-content:space-between; padding:2px 0;"><span>إجمالي المبيعات</span><span>${stats.totalRevenue} ر.ق</span></div>
+        <div style="display:flex; justify-content:space-between; padding:2px 0;"><span>إجمالي الأرباح</span><span>${profit.profit} ر.ق</span></div>
+        <div style="display:flex; justify-content:space-between; padding:2px 0;"><span>عدد القطع</span><span>${stats.totalItems}</span></div>
+        <div style="display:flex; justify-content:space-between; padding:2px 0;"><span>عدد الفواتير</span><span>${todayInvoices.length}</span></div>
+        <div style="display:flex; justify-content:space-between; padding:2px 0;"><span>الأكثر مبيعاً</span><span>${stats.topProduct}</span></div>
+      </div>
 
       <hr style="border:1px dashed #000;margin:6px 0;">
       <h2 style="font-size:12px;">تفاصيل المبيعات</h2>
