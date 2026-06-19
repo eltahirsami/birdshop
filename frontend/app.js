@@ -1372,8 +1372,8 @@ async function printDailyReport() {
         th:nth-child(2), td:nth-child(2) { width: 20%; }
         th:nth-child(3), td:nth-child(3) { width: 30%; }
         .summary { margin:8px 0; font-size:12px; }
-        .summary tr td:first-child { text-align: left; }
-        .summary tr td:last-child { text-align: right; font-weight: bold; }
+        .summary tr td:first-child { text-align: right; }
+        .summary tr td:last-child { text-align: left; font-weight: bold; }
         .total-line { border-top:2px dashed #000; margin-top:6px; padding-top:6px; text-align:center; font-size:14px; font-weight:bold; }
         .footer { text-align:center; font-size:10px; color:#777; margin-top:8px; border-top:1px dashed #000; padding-top:4px; }
       </style>
