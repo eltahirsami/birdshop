@@ -1360,7 +1360,8 @@ async function printDailyReport() {
     <head>
       <title>تقرير اليوم</title>
       <style>
-        body { font-family:tahoma; width:80mm; margin:0; padding:5px; font-size:12px; }
+        body { font-family:tahoma; width:58mm; margin:0; padding:0 2mm 0 0; font-size:12px; }
+        @media print { @page { size: 58mm auto; margin: 0; } body { width: 58mm; } }
         .header { text-align:center; border-bottom:2px dashed #000; padding-bottom:6px; margin-bottom:6px; }
         .shop-name { font-size:16px; font-weight:bold; }
         .shop-info { font-size:10px; color:#555; }
@@ -1376,8 +1377,9 @@ async function printDailyReport() {
     </head>
     <body>
       <div class="header">
-        <div class="shop-name">${settingsInvoiceTitle || '🧾 Smart POS System'}</div>
+        <div class="shop-name">🦜 SKY BIRD</div>
         ${settingsShopPhone ? `<div class="shop-info">${settingsShopPhone}</div>` : ''}
+        ${settingsShopAddress ? `<div class="shop-info">${settingsShopAddress}</div>` : ''}
       </div>
 
       <h2>📊 تقرير اليوم</h2>
