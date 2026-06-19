@@ -1388,11 +1388,11 @@ async function printDailyReport() {
       <p style="text-align:center;font-size:11px;">${date}</p>
 
       <table class="summary">
-        <tr><td>💰 إجمالي المبيعات</td><td>${stats.totalRevenue} ر.ق</td></tr>
-        <tr><td>📈 إجمالي الأرباح</td><td>${profit.profit} ر.ق</td></tr>
-        <tr><td>📦 عدد القطع</td><td>${stats.totalItems}</td></tr>
-        <tr><td>🧾 عدد الفواتير</td><td>${todayInvoices.length}</td></tr>
-        <tr><td>🔥 الأكثر مبيعاً</td><td>${stats.topProduct}</td></tr>
+        <tr><td>إجمالي المبيعات</td><td>${stats.totalRevenue} ر.ق</td></tr>
+        <tr><td>إجمالي الأرباح</td><td>${profit.profit} ر.ق</td></tr>
+        <tr><td>عدد القطع</td><td>${stats.totalItems}</td></tr>
+        <tr><td>عدد الفواتير</td><td>${todayInvoices.length}</td></tr>
+        <tr><td>الأكثر مبيعاً</td><td>${stats.topProduct}</td></tr>
       </table>
 
       <hr style="border:1px dashed #000;margin:6px 0;">
