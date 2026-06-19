@@ -746,34 +746,44 @@ async function checkLowStock() {
 /* =========================
 طباعة الفاتورة
 ========================= */
+function buildInvoiceHtml(invoiceNumber, date, rows, total) {
+  return `
+    <html dir="rtl"><head><title>فاتورة</title><style>${INVOICE_STYLE}</style></head>
+    <body>
+      <div>
+        <div class="shop-header">
+          <div style="font-size:14px;font-weight:bold;letter-spacing:2px;">🦜 SKY BIRD</div>
+          <div style="font-size:10px;">${settingsShopPhone}</div>
+          ${settingsShopAddress ? `<div style="font-size:10px;">${settingsShopAddress}</div>` : ''}
+          <div style="border-top:1px solid #000;margin:3px 0;"></div>
+          <div style="font-size:11px;font-weight:bold;">فاتورة بيع</div>
+        </div>
+        <p>رقم الفاتورة : ${invoiceNumber}</p>
+        <p>التاريخ : ${date}</p>
+        <table><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>${rows}</table>
+        <h3>الإجمالي : ${total}</h3>
+        <div class="footer">
+          ✨ شكراً لزيارتكم ✨
+          <br>نتمنى لكم تجربة ممتعة
+          <br>🦜 SKY BIRD
+        </div>
+      </div>
+    </body></html>
+  `
+}
+
 function printInvoice(items, invoiceNumber) {
   if (!items || items.length === 0) { alert("لا يوجد منتجات للطباعة"); return }
-
   let total = 0
   const date = new Date().toLocaleString()
   let rows = ''
-
   items.forEach(c => {
     const sum = c.price * c.qty
     total += sum
     rows += `<tr><td>${c.name}</td><td>${c.qty}</td><td>${c.price}</td><td>${sum}</td></tr>`
   })
-
-  const html = `
-    <html dir="rtl"><head><title>فاتورة</title><style>${INVOICE_STYLE}</style></head>
-    <body>
-      ${buildShopHeader()}
-      <h2>فاتورة بيع</h2>
-      <p>رقم الفاتورة : ${invoiceNumber}</p>
-      <p>التاريخ : ${date}</p>
-      <table><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>${rows}</table>
-      <h3>الإجمالي : ${total}</h3>
-      <div class="footer">شكراً لزيارتكم — نتمنى لكم تجربة ممتعة</div>
-    </body></html>
-  `
-
   const win = window.open("", "", "width=320,height=600")
-  win.document.write(html)
+  win.document.write(buildInvoiceHtml(invoiceNumber, date, rows, total))
   win.document.close()
   setTimeout(() => win.print(), 500)
 }
@@ -841,40 +851,19 @@ function printInvoiceFromSearch() {
 
 async function openInvoiceWindow(invoiceNumber) {
   if (!invoiceNumber) { alert("رقم الفاتورة غير موجود"); return }
-
   const res = await fetch(`/sales/invoice/${invoiceNumber}`, { credentials: 'include' })
   const data = await res.json()
-
   if (!data || !data.items) { alert("الفاتورة غير موجودة"); return }
-
   let total = 0
   let rows = ""
-
   data.items.forEach(item => {
-    const price = item.price ?? (item.total / item.quantity)
-    const sum = item.total ?? (item.quantity * price)
+    const price = item.total / item.quantity
+    const sum = item.total
     total += sum
     rows += `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${price}</td><td>${sum}</td></tr>`
   })
-
-  const html = `
-    <html dir="rtl"><head><title>فاتورة ${invoiceNumber}</title><style>${INVOICE_STYLE}</style></head>
-    <body>
-      ${buildShopHeader()}
-      <h2>فاتورة بيع</h2>
-      <p>🧾 رقم الفاتورة: ${invoiceNumber}</p>
-      <p>📅 تاريخ الفاتورة: ${new Date(data.date).toLocaleString()}</p>
-      <table><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>${rows}</table>
-      <h3>الإجمالي: ${total}</h3>
-      <div class="footer">شكراً لزيارتكم — نتمنى لكم تجربة ممتعة</div>
-      <div style="text-align:center; margin-top:10px;">
-        <button onclick="window.print()">🖨️ طباعة الفاتورة</button>
-      </div>
-    </body></html>
-  `
-
   const win = window.open("", "", "width=320,height=600")
-  win.document.write(html)
+  win.document.write(buildInvoiceHtml(data.invoice_number, new Date(data.date).toLocaleString(), rows, total))
   win.document.close()
   setTimeout(() => win.print(), 500)
 }
@@ -882,34 +871,17 @@ async function openInvoiceWindow(invoiceNumber) {
 async function openInvoice(number) {
   const res = await fetch(`/sales/invoice/${number}`, { credentials: 'include' })
   const data = await res.json()
-
   if (!data || !data.items) { alert("الفاتورة غير موجودة"); return }
-
   let total = 0
   let rows = ""
-
   data.items.forEach(item => {
     const price = item.total / item.quantity
     const sum = item.total
     total += sum
     rows += `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${price}</td><td>${sum}</td></tr>`
   })
-
-  const html = `
-    <html dir="rtl"><head><title>فاتورة</title><style>${INVOICE_STYLE}</style></head>
-    <body>
-      ${buildShopHeader()}
-      <h2>فاتورة بيع</h2>
-      <p>رقم الفاتورة : ${data.invoice_number}</p>
-      <p>التاريخ : ${new Date(data.date).toLocaleString()}</p>
-      <table><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>${rows}</table>
-      <h3>الإجمالي : ${total}</h3>
-      <div class="footer">شكراً لزيارتكم — نتمنى لكم تجربة ممتعة</div>
-    </body></html>
-  `
-
   const win = window.open("", "", "width=320,height=600")
-  win.document.write(html)
+  win.document.write(buildInvoiceHtml(data.invoice_number, new Date(data.date).toLocaleString(), rows, total))
   win.document.close()
   setTimeout(() => win.print(), 500)
 }
@@ -918,7 +890,6 @@ async function openInvoiceTwoCopies(number) {
   const res = await fetch(`/sales/invoice/${number}`, { credentials: 'include' })
   const data = await res.json()
   if (!data || !data.items) { alert("الفاتورة غير موجودة"); return }
-
   let total = 0
   let rows = ""
   data.items.forEach(item => {
@@ -927,33 +898,8 @@ async function openInvoiceTwoCopies(number) {
     total += sum
     rows += `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${price}</td><td>${sum}</td></tr>`
   })
-
-  const html = `
-    <html dir="rtl"><head><title>فاتورة</title><style>${INVOICE_STYLE}</style></head>
-    <body>
-      <div>
-        <div class="shop-header">
-          <div style="font-size:14px;font-weight:bold;letter-spacing:2px;">🦜 SKY BIRD</div>
-          <div style="font-size:10px;">${settingsShopPhone}</div>
-          ${settingsShopAddress ? `<div style="font-size:10px;">${settingsShopAddress}</div>` : ''}
-          <div style="border-top:1px solid #000;margin:3px 0;"></div>
-          <div style="font-size:11px;font-weight:bold;">فاتورة بيع</div>
-        </div>
-        <p>رقم الفاتورة : ${data.invoice_number}</p>
-        <p>التاريخ : ${new Date(data.date).toLocaleString()}</p>
-        <table><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>${rows}</table>
-        <h3>الإجمالي : ${total}</h3>
-        <div class="footer">
-          ✨ شكراً لزيارتكم ✨
-          <br>نتمنى لكم تجربة ممتعة
-          <br>🦜 SKY BIRD
-        </div>
-      </div>
-    </body></html>
-  `
-
   const win = window.open("", "", "width=320,height=600")
-  win.document.write(html)
+  win.document.write(buildInvoiceHtml(data.invoice_number, new Date(data.date).toLocaleString(), rows, total))
   win.document.close()
   setTimeout(() => win.print(), 500)
 }
