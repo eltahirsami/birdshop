@@ -1360,14 +1360,17 @@ async function printDailyReport() {
     <head>
       <title>تقرير اليوم</title>
       <style>
-        body { font-family: Arial, sans-serif; width: 58mm; font-size: 12px; color: #000; background: #fff; direction: rtl; margin: 0 auto; text-align: right; padding: 0 1mm; }
+        body { font-family: Arial, sans-serif; width: 58mm; font-size: 11px; color: #000; background: #fff; direction: rtl; margin: 0 auto; text-align: right; padding: 0 1mm; }
         @media print { @page { size: 58mm auto; margin: 0; } body { width: 58mm; } }
         .header { text-align:center; border-bottom:2px dashed #000; padding-bottom:6px; margin-bottom:6px; }
         .shop-name { font-size:16px; font-weight:bold; }
         .shop-info { font-size:10px; color:#000; }
         h2 { text-align:center; font-size:13px; margin:6px 0; }
-        table { width:100%; border-collapse:collapse; font-size:11px; }
-        th,td { border-bottom:1px dashed #ccc; padding:3px; text-align:right; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; table-layout: fixed; }
+        th, td { border-bottom: 1px dashed #ccc; padding: 2px 1px; text-align: right; word-wrap: break-word; overflow-wrap: break-word; }
+        th:nth-child(1), td:nth-child(1) { width: 50%; }
+        th:nth-child(2), td:nth-child(2) { width: 20%; }
+        th:nth-child(3), td:nth-child(3) { width: 30%; }
         .summary { margin:8px 0; font-size:12px; }
         .summary tr td:last-child { text-align:right; font-weight:bold; }
         .total-line { border-top:2px dashed #000; margin-top:6px; padding-top:6px; text-align:center; font-size:14px; font-weight:bold; }
