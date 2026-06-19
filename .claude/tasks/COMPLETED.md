@@ -136,6 +136,13 @@
 - [x] **Logs #3** — Replaced "مسح الفلتر" button with "🗑 مسح كل السجل": shows Arabic confirmation, calls `DELETE /logs/all`, reloads table. Old `clearLogsFilter()` replaced with `async clearAllLogs()`. `frontend/developer.html`
 - [x] **Logs #4** — `DELETE /logs/all` route: inline admin/developer guard, deletes all rows from `logs` table, writes `logAction('مسح سجلات', 'ALL')`. `index.js`
 
+## Documentation audit (2026-06-19)
+
+- [x] **Audit #1** — Verified all 6 previously listed bugs are resolved in source code: manualBackup permission, saveSettings stub, WhatsApp cron, sales pagination, invoice 404, admin prompt() dialogs.
+- [x] **Audit #2** — Updated `backend/.claude/tasks/TODO.md`: all bugs marked complete; full completed-features list added.
+- [x] **Audit #3** — Updated `PROJECT_STATUS.md` (outer repo): removed stale bug list, updated "What Works" section to reflect current feature set (thermal printing, settings persistence, WhatsApp cron, paginated history).
+- [x] **Audit #4** — Committed and pushed doc changes to GitHub (`04bec61` on `main`).
+
 ## Invoice print — thermal printer overhaul (2026-06-17)
 
 - [x] **Print #1** — Checkout invoice changed from 2 copies to 1 copy: removed `copyHtml()` helper and page-break duplication from `openInvoiceTwoCopies()`. No "نسخة العميل" / "نسخة المحل" labels. `frontend/app.js`
