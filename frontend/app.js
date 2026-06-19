@@ -929,13 +929,21 @@ async function openInvoiceTwoCopies(number) {
     <html dir="rtl"><head><title>فاتورة</title><style>${INVOICE_STYLE}</style></head>
     <body>
       <div>
-        ${buildShopHeader()}
-        <h2>فاتورة بيع</h2>
+        <div class="shop-header">
+          <div style="font-size:14px;font-weight:bold;letter-spacing:2px;">🦜 SKY BIRD</div>
+          <div style="font-size:10px;">${settingsShopPhone}</div>
+          <div style="border-top:1px solid #000;margin:3px 0;"></div>
+          <div style="font-size:11px;font-weight:bold;">فاتورة بيع</div>
+        </div>
         <p>رقم الفاتورة : ${data.invoice_number}</p>
         <p>التاريخ : ${new Date(data.date).toLocaleString()}</p>
         <table><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>${rows}</table>
         <h3>الإجمالي : ${total}</h3>
-        <div class="footer">شكراً لزيارتكم — نتمنى لكم تجربة ممتعة</div>
+        <div class="footer">
+          ✨ شكراً لزيارتكم ✨
+          <br>نتمنى لكم تجربة ممتعة
+          <br>🦜 SKY BIRD
+        </div>
       </div>
     </body></html>
   `
