@@ -1364,13 +1364,12 @@ async function printDailyReport() {
         @media print { @page { size: 58mm auto; margin: 0; } body { width: 58mm; } }
         .header { text-align:center; border-bottom:2px dashed #000; padding-bottom:6px; margin-bottom:6px; }
         .shop-name { font-size:16px; font-weight:bold; }
-        .shop-info { font-size:10px; color:#555; }
+        .shop-info { font-size:10px; color:#000; }
         h2 { text-align:center; font-size:13px; margin:6px 0; }
         table { width:100%; border-collapse:collapse; font-size:11px; }
-        th,td { border-bottom:1px dashed #ccc; padding:3px; text-align:center; }
+        th,td { border-bottom:1px dashed #ccc; padding:3px; text-align:right; }
         .summary { margin:8px 0; font-size:12px; }
-        .summary tr td:first-child { text-align:right; }
-        .summary tr td:last-child { text-align:left; font-weight:bold; }
+        .summary tr td:last-child { text-align:right; font-weight:bold; }
         .total-line { border-top:2px dashed #000; margin-top:6px; padding-top:6px; text-align:center; font-size:14px; font-weight:bold; }
         .footer { text-align:center; font-size:10px; color:#777; margin-top:8px; border-top:1px dashed #000; padding-top:4px; }
       </style>
