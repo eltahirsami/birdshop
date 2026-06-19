@@ -1367,9 +1367,9 @@ async function printDailyReport() {
         .shop-info { font-size:10px; color:#000; }
         h2 { text-align:center; font-size:13px; margin:6px 0; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
-        th:nth-child(1), td:nth-child(1) { width: 45%; text-align: right; }
-        th:nth-child(2), td:nth-child(2) { width: 20%; text-align: right; }
-        th:nth-child(3), td:nth-child(3) { width: 35%; text-align: right; }
+        th:nth-child(1), td:nth-child(1) { width: 40%; text-align: right; }
+        th:nth-child(2), td:nth-child(2) { width: 15%; text-align: right; }
+        th:nth-child(3), td:nth-child(3) { width: 45%; text-align: right; }
         th,td { border-bottom:1px dashed #ccc; padding:3px; text-align:right; }
         .summary { margin:8px 0; font-size:12px; }
         .summary tr td:last-child { text-align:right; font-weight:bold; }
