@@ -472,8 +472,8 @@ async function printSupplierStatement() {
     const html = `
       <html dir="rtl">
         <head><title>كشف حساب مورد</title><style>
-          body { font-family: Arial, sans-serif; width: 58mm; font-size: 11px; color: #000; background: #fff; direction: rtl; margin: 0 auto; padding: 0 2mm; }
-          @media print { @page { size: 58mm auto; margin: 0; } body { width: 58mm; } }
+          body { font-family: Arial, sans-serif; width: 100%; font-size: 11px; color: #000; background: #fff; direction: rtl; margin: 0 auto; padding: 0 2mm; }
+          @media print { @page { size: auto landscape; margin: 5mm; } body { width: 100%; } }
           table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 8px; }
           th, td { padding: 2px 1px; text-align: right; border-bottom: 1px dashed #000; word-wrap: break-word; }
           th:nth-child(1), td:nth-child(1) { width: 32%; }
