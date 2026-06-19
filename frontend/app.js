@@ -37,11 +37,13 @@ const INVOICE_STYLE = `
 
 let settingsInvoiceTitle = ''
 let settingsShopPhone = ''
+let settingsShopAddress = ''
 
 function buildShopHeader() {
   const title = settingsInvoiceTitle || '🧾 Smart POS System'
   const phone = settingsShopPhone ? `<div class="shop-info">${settingsShopPhone}</div>` : ''
-  return `<div class="shop-header"><div class="shop-name">${title}</div>${phone}</div>`
+  const address = settingsShopAddress ? `<div class="shop-info">${settingsShopAddress}</div>` : ''
+  return `<div class="shop-header"><div class="shop-name">${title}</div>${phone}${address}</div>`
 }
 
 async function loadAppSettings() {
@@ -51,6 +53,7 @@ async function loadAppSettings() {
     const data = await res.json()
     if (data.invoice_title) settingsInvoiceTitle = data.invoice_title
     if (data.shop_phone) settingsShopPhone = data.shop_phone
+    if (data.shop_address) settingsShopAddress = data.shop_address
     if (data.shop_name) {
       document.title = '🧾 ' + data.shop_name
       const h1 = document.getElementById('mainTitle')
@@ -932,6 +935,7 @@ async function openInvoiceTwoCopies(number) {
         <div class="shop-header">
           <div style="font-size:14px;font-weight:bold;letter-spacing:2px;">🦜 SKY BIRD</div>
           <div style="font-size:10px;">${settingsShopPhone}</div>
+          ${settingsShopAddress ? `<div style="font-size:10px;">${settingsShopAddress}</div>` : ''}
           <div style="border-top:1px solid #000;margin:3px 0;"></div>
           <div style="font-size:11px;font-weight:bold;">فاتورة بيع</div>
         </div>

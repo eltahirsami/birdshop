@@ -959,8 +959,8 @@ app.delete('/logs/all', (req, res) => {
 });
 
 app.get('/settings', requireLogin, (req, res) => {
-  const keys = ['shop_name', 'invoice_title', 'shop_phone'];
-  db.all("SELECT key, value FROM settings WHERE key IN ('shop_name','invoice_title','shop_phone')", [], (err, rows) => {
+  const keys = ['shop_name', 'invoice_title', 'shop_phone', 'shop_address'];
+  db.all("SELECT key, value FROM settings WHERE key IN ('shop_name','invoice_title','shop_phone','shop_address')", [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'db error' });
     const obj = {};
     rows.forEach(r => { obj[r.key] = r.value; });

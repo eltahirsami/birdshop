@@ -146,6 +146,7 @@
         <input class="input" id="shopName" placeholder="اسم المحل (يظهر كعنوان الصفحة)">
         <input class="input" id="invoiceTitle" placeholder="عنوان الفاتورة (يظهر في رأس الفاتورة)">
         <input class="input" id="shopPhone" placeholder="هاتف المحل (يظهر في الفاتورة)">
+        <input class="input" id="shopAddress" placeholder="عنوان المحل (يظهر في الفاتورة)">
         <input class="input" id="whatsappNumber" placeholder="رقم الواتساب (974xxxxxxxx)">
         <input class="input" id="lowStockThreshold" type="number" min="1" placeholder="حد المخزون المنخفض (افتراضي: 5)">
         <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ الإعدادات</button>
@@ -396,6 +397,7 @@ async function loadSettings() {
     if (data.shop_name !== undefined) document.getElementById('shopName').value = data.shop_name
     if (data.invoice_title !== undefined) document.getElementById('invoiceTitle').value = data.invoice_title
     if (data.shop_phone !== undefined) document.getElementById('shopPhone').value = data.shop_phone
+    if (data.shop_address !== undefined) document.getElementById('shopAddress').value = data.shop_address
     if (data.whatsapp_number !== undefined) document.getElementById('whatsappNumber').value = data.whatsapp_number
     if (data.low_stock_threshold !== undefined) document.getElementById('lowStockThreshold').value = data.low_stock_threshold
   } catch (e) { /* ignore — settings are optional */ }
@@ -405,6 +407,7 @@ async function saveSettings() {
   const shopName = document.getElementById('shopName').value.trim()
   const invoiceTitle = document.getElementById('invoiceTitle').value.trim()
   const shopPhone = document.getElementById('shopPhone').value.trim()
+  const shopAddress = document.getElementById('shopAddress').value.trim()
   const whatsapp = document.getElementById('whatsappNumber').value.trim()
   const threshold = document.getElementById('lowStockThreshold').value.trim()
   try {
@@ -412,7 +415,7 @@ async function saveSettings() {
       method: 'PUT',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ shop_name: shopName, invoice_title: invoiceTitle, shop_phone: shopPhone, whatsapp_number: whatsapp, low_stock_threshold: threshold || '5' })
+      body: JSON.stringify({ shop_name: shopName, invoice_title: invoiceTitle, shop_phone: shopPhone, shop_address: shopAddress, whatsapp_number: whatsapp, low_stock_threshold: threshold || '5' })
     })
     const data = await res.json()
     if (res.ok) {
