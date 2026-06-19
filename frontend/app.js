@@ -1371,8 +1371,10 @@ async function printDailyReport() {
         th:nth-child(1), td:nth-child(1) { width: 50%; }
         th:nth-child(2), td:nth-child(2) { width: 20%; }
         th:nth-child(3), td:nth-child(3) { width: 30%; }
-        .summary { margin:8px 0; font-size:12px; }
-        .summary tr td:last-child { text-align:right; font-weight:bold; }
+        .summary { margin: 8px 0; font-size: 11px; direction: rtl; }
+        .summary table { table-layout: auto; width: 100%; }
+        .summary td { text-align: right; padding: 2px 0; border: none; white-space: nowrap; }
+        .summary td:last-child { padding-right: 4px; }
         .total-line { border-top:2px dashed #000; margin-top:6px; padding-top:6px; text-align:center; font-size:14px; font-weight:bold; }
         .footer { text-align:center; font-size:10px; color:#777; margin-top:8px; border-top:1px dashed #000; padding-top:4px; }
       </style>
