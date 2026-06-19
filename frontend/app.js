@@ -24,8 +24,8 @@ const INVOICE_STYLE = `
   table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   th, td { padding: 2px 1px; font-size: 11px; border-bottom: 1px dashed #000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   th:nth-child(1), td:nth-child(1) { width: 30%; text-align: right; }
-  th:nth-child(2), td:nth-child(2) { width: 10%; text-align: center; }
-  th:nth-child(3), td:nth-child(3) { width: 18%; text-align: center; }
+  th:nth-child(2), td:nth-child(2) { width: 15%; text-align: center; }
+  th:nth-child(3), td:nth-child(3) { width: 15%; text-align: center; }
   th:nth-child(4), td:nth-child(4) { width: 42%; text-align: center; }
   .separator { border-top: 1px dashed #000; margin: 4px 0; }
   .footer { text-align: center; font-size: 9px; margin-top: 6px; border-top: 1px dashed #000; padding-top: 4px; }
