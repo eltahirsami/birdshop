@@ -133,6 +133,30 @@ async function deleteCategory(id) {
   }
 }
 
+async function deleteAllProducts() {
+  if (!confirm('هل أنت متأكد من مسح كل المنتجات؟ لا يمكن التراجع عن هذا الإجراء.')) return
+  const res = await fetch('/products/all', { method: 'DELETE', credentials: 'include' })
+  const data = await res.json()
+  if (res.ok) {
+    await loadProducts()
+    alert(data.message)
+  } else {
+    alert(data.error || 'فشل مسح المنتجات')
+  }
+}
+
+async function deleteAllCategories() {
+  if (!confirm('هل أنت متأكد من مسح كل التصنيفات؟ لا يمكن التراجع عن هذا الإجراء.')) return
+  const res = await fetch('/categories/all', { method: 'DELETE', credentials: 'include' })
+  const data = await res.json()
+  if (res.ok) {
+    await loadCategories()
+    alert(data.message)
+  } else {
+    alert(data.error || 'فشل مسح التصنيفات')
+  }
+}
+
 /* =========================
 إحصائيات اليوم
 ========================= */
@@ -180,6 +204,8 @@ async function getUser() {
   if (userRole === "cashier") {
     const clearBtn = document.querySelector("button[onclick='clearSalesHistory()']")
     if (clearBtn) clearBtn.parentElement.style.display = "none"
+    const deleteAllBtns = document.getElementById("deleteAllBtns")
+    if (deleteAllBtns) deleteAllBtns.style.display = "none"
   }
 }
 

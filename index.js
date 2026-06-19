@@ -161,6 +161,22 @@ app.put('/products/:id', requireLogin, requireCashier, (req, res) => {
   );
 });
 
+app.delete('/products/all', requireLogin, requireAdmin, (req, res) => {
+  db.run("DELETE FROM products", [], function(err) {
+    if (err) return res.status(500).json({ error: 'فشل حذف المنتجات' });
+    logAction(req.session.user.id, req.session.user.username, 'مسح كل المنتجات', 'تم حذف ' + this.changes + ' منتج');
+    res.json({ message: 'تم مسح كل المنتجات' });
+  });
+});
+
+app.delete('/categories/all', requireLogin, requireAdmin, (req, res) => {
+  db.run("DELETE FROM categories", [], function(err) {
+    if (err) return res.status(500).json({ error: 'فشل حذف التصنيفات' });
+    logAction(req.session.user.id, req.session.user.username, 'مسح كل التصنيفات', 'تم حذف ' + this.changes + ' تصنيف');
+    res.json({ message: 'تم مسح كل التصنيفات' });
+  });
+});
+
 app.delete('/products/:id', requireLogin, requireAdmin, (req, res) => {
   const id = req.params.id;
   db.get("SELECT name FROM products WHERE id=?", [id], (err, product) => {
