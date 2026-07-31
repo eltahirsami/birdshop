@@ -202,6 +202,8 @@ async function getUser() {
   }
 
   if (userRole === "cashier") {
+    const addProductForm = document.getElementById("addProductForm")
+    if (addProductForm) addProductForm.style.display = "none"
     const clearBtn = document.querySelector("button[onclick='clearSalesHistory()']")
     if (clearBtn) clearBtn.parentElement.style.display = "none"
     const deleteAllBtns = document.getElementById("deleteAllBtns")
@@ -228,15 +230,11 @@ function renderProducts(list) {
   list.forEach(p => {
     let adminButtons = ""
     if (userRole === "admin") {
-  adminButtons = `
+      adminButtons = `
     <button type="button" onclick="editProduct(${p.id});return false;">✏️ تعديل</button>
     <button type="button" onclick="deleteProduct(${p.id});return false;">🗑 حذف</button>
   `
-} else if (userRole === "cashier") {
-  adminButtons = `
-    <button type="button" onclick="editProduct(${p.id});return false;">✏️ تعديل</button>
-  `
-}
+    }
 
     let lowStock = ""
     if (p.stock <= 5) lowStock = "⚠️"
