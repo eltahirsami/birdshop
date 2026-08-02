@@ -1032,6 +1032,10 @@ function openSuppliersWindow() {
   window.open("/suppliers.html", "", "width=1100,height=700")
 }
 
+function openExpensesWindow() {
+  window.open("/expenses.html", "", "width=1000,height=700")
+}
+
 
 
 

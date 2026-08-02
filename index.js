@@ -1173,6 +1173,64 @@ app.post('/login', (req, res) => {
   );
 });
 
+/* =========================
+   المنصرفات
+========================= */
+app.get('/expenses', requireLogin, requireCashier, (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const offset = (page - 1) * limit;
+  const from = req.query.from || null;
+  const to   = req.query.to   || null;
+
+  const conditions = [];
+  const params = [];
+  if (from) { conditions.push('date >= ?'); params.push(from); }
+  if (to)   { conditions.push('date <= ?'); params.push(to); }
+  const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+
+  db.get(`SELECT COUNT(*) as total FROM expenses ${where}`, params, (err, row) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    const total = row.total;
+    db.all(
+      `SELECT e.*, u.username FROM expenses e LEFT JOIN users u ON e.user_id = u.id ${where} ORDER BY e.date DESC, e.created_at DESC LIMIT ? OFFSET ?`,
+      [...params, limit, offset],
+      (err2, rows) => {
+        if (err2) return res.status(500).json({ error: 'Database error' });
+        res.json({ rows, total });
+      }
+    );
+  });
+});
+
+app.post('/expenses', requireLogin, requireCashier, (req, res) => {
+  const { description, amount, category, date } = req.body;
+  if (!description || !amount || !category || !date) {
+    return res.status(400).json({ error: 'بيانات ناقصة' });
+  }
+  const userId   = req.session.user.id;
+  const username = req.session.user.username;
+  db.run(
+    'INSERT INTO expenses (description, amount, category, date, user_id) VALUES (?,?,?,?,?)',
+    [description, parseFloat(amount), category, date, userId],
+    function (err) {
+      if (err) return res.status(500).json({ error: 'Database error' });
+      logAction(userId, username, 'منصرف', `${category}: ${description} — ${amount} ر.ق`);
+      res.json({ id: this.lastID });
+    }
+  );
+});
+
+app.delete('/expenses/:id', requireLogin, requireAdmin, (req, res) => {
+  const id = parseInt(req.params.id);
+  db.run('DELETE FROM expenses WHERE id = ?', [id], function (err) {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (this.changes === 0) return res.status(404).json({ error: 'غير موجود' });
+    logAction(req.session.user.id, req.session.user.username, 'حذف منصرف', `id: ${id}`);
+    res.json({ ok: true });
+  });
+});
+
 app.listen(3000, () => {
   console.log("✅ Server running on http://localhost:3000");
 });

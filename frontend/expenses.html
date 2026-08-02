@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💸 المنصرفات</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="xlsx.full.min.js"></script>
+  <style>
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 14px; }
+    .panel { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.04); margin-bottom: 14px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .row input, .row select { padding: 8px; border: 1px solid #ddd; border-radius: 8px; font-family: tahoma; font-size: 13px; }
+    .row button { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; font-family: tahoma; font-size: 13px; }
+    .btnPrimary { background: #8e44ad; color: #fff; }
+    .btnGreen   { background: #27ae60; color: #fff; }
+    .btnGray    { background: #7f8c8d; color: #fff; }
+    .btnRed     { background: #c0392b; color: #fff; }
+    .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .stat { flex: 1; min-width: 160px; background: #f8f9fb; border: 1px dashed #ddd; border-radius: 10px; padding: 10px; }
+    .stat h4 { margin: 0 0 6px; font-size: 13px; color: #333; }
+    .stat .val { font-size: 20px; font-weight: bold; color: #8e44ad; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #eee; padding: 8px; font-size: 13px; text-align: center; }
+    th { background: #f3f4f7; }
+    .msg { font-weight: bold; margin-top: 8px; }
+    .pagination { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+  </style>
+</head>
+<body style="background:#f6f7fb">
+<div class="wrap">
+
+  <div class="row" style="justify-content:space-between; margin-bottom:12px;">
+    <h2 style="margin:0;">💸 المنصرفات</h2>
+    <div class="row">
+      <button class="btnGreen" onclick="exportExpensesExcel()">📊 تصدير Excel</button>
+      <button class="btnGray"  onclick="loadExpenses()">🔄 تحديث</button>
+    </div>
+  </div>
+
+  <!-- إجماليات -->
+  <div class="stats">
+    <div class="stat">
+      <h4>منصرفات اليوم</h4>
+      <div class="val" id="todayTotal">0</div>
+    </div>
+    <div class="stat">
+      <h4>منصرفات الشهر</h4>
+      <div class="val" id="monthTotal">0</div>
+    </div>
+  </div>
+
+  <!-- فلتر التواريخ -->
+  <div class="panel">
+    <div class="row">
+      <label>من: <input type="date" id="filterFrom"></label>
+      <label>إلى: <input type="date" id="filterTo"></label>
+      <button class="btnPrimary" onclick="applyFilter()">🔍 بحث</button>
+      <button class="btnGray"    onclick="resetFilter()">✖ إعادة تعيين</button>
+    </div>
+  </div>
+
+  <!-- نموذج إضافة منصرف -->
+  <div class="panel">
+    <h3 style="margin:0 0 10px;">➕ إضافة منصرف</h3>
+    <div class="row">
+      <input type="text"   id="expDesc"     placeholder="الوصف"   style="flex:1; min-width:140px;">
+      <input type="number" id="expAmount"   placeholder="المبلغ"  style="width:100px;" min="0" step="0.01">
+      <select id="expCategory" style="min-width:130px;">
+        <option value="إيجار">إيجار</option>
+        <option value="كهرباء">كهرباء</option>
+        <option value="رواتب">رواتب</option>
+        <option value="مصاريف عامة">مصاريف عامة</option>
+        <option value="سحب">سحب</option>
+        <option value="أخرى">أخرى</option>
+      </select>
+      <input type="date" id="expDate" style="min-width:130px;">
+      <button class="btnPrimary" onclick="addExpense()">💾 حفظ</button>
+    </div>
+    <div id="expMsg" class="msg"></div>
+  </div>
+
+  <!-- جدول المنصرفات -->
+  <div class="panel">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>الوصف</th>
+          <th>الفئة</th>
+          <th>المبلغ (ر.ق)</th>
+          <th>التاريخ</th>
+          <th>المستخدم</th>
+          <th id="deleteTh" style="display:none;">حذف</th>
+        </tr>
+      </thead>
+      <tbody id="expensesTable"></tbody>
+    </table>
+    <div class="pagination">
+      <button id="prevBtn" onclick="loadExpenses(currentPage - 1)" disabled>◀ السابق</button>
+      <span id="pageInfo" style="font-size:13px;color:#555;">صفحة 1</span>
+      <button id="nextBtn" onclick="loadExpenses(currentPage + 1)">التالي ▶</button>
+    </div>
+  </div>
+
+</div>
+<script>
+  let currentUserRole = null
+  let currentPage = 1
+  let filterFrom = ''
+  let filterTo   = ''
+  const PAGE_LIMIT = 20
+
+  async function fetchJson(url, opts) {
+    const res = await fetch(url, { credentials: 'include', ...opts })
+    return { res, data: await res.json() }
+  }
+
+  async function init() {
+    const { data } = await fetchJson('/me')
+    if (!data.session) { location.href = '/login.html'; return }
+    currentUserRole = data.session.role
+    if (!['admin', 'cashier', 'developer'].includes(currentUserRole)) {
+      document.body.innerHTML = '<div style="font-family:tahoma;padding:20px">غير مصرح</div>'
+      return
+    }
+    if (currentUserRole === 'admin') {
+      document.getElementById('deleteTh').style.display = ''
+    }
+    document.getElementById('expDate').value = new Date().toISOString().slice(0, 10)
+    await loadExpenses()
+    await loadTotals()
+  }
+
+  async function loadExpenses(page) {
+    page = (page && page >= 1) ? page : 1
+    currentPage = page
+    const params = new URLSearchParams({ page, limit: PAGE_LIMIT })
+    if (filterFrom) params.set('from', filterFrom)
+    if (filterTo)   params.set('to',   filterTo)
+
+    const { data } = await fetchJson('/expenses?' + params)
+    const rows  = data.rows  || []
+    const total = data.total || 0
+    const totalPages = Math.ceil(total / PAGE_LIMIT) || 1
+
+    const tbody = document.getElementById('expensesTable')
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#888;">لا توجد منصرفات</td></tr>`
+    } else {
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${r.id}</td>
+          <td>${r.description}</td>
+          <td>${r.category}</td>
+          <td>${r.amount.toFixed(2)}</td>
+          <td>${r.date}</td>
+          <td>${r.username || '-'}</td>
+          ${currentUserRole === 'admin' ? `<td><button class="btnRed" onclick="deleteExpense(${r.id})">🗑 حذف</button></td>` : ''}
+        </tr>
+      `).join('')
+    }
+
+    document.getElementById('pageInfo').innerText = `صفحة ${page} من ${totalPages} (${total} سجل)`
+    document.getElementById('prevBtn').disabled = page <= 1
+    document.getElementById('nextBtn').disabled = page >= totalPages
+  }
+
+  async function loadTotals() {
+    const today = new Date().toISOString().slice(0, 10)
+    const monthStart = today.slice(0, 7) + '-01'
+
+    const [todayRes, monthRes] = await Promise.all([
+      fetchJson(`/expenses?from=${today}&to=${today}&limit=9999`),
+      fetchJson(`/expenses?from=${monthStart}&to=${today}&limit=9999`)
+    ])
+
+    const todaySum = (todayRes.data.rows || []).reduce((s, r) => s + r.amount, 0)
+    const monthSum = (monthRes.data.rows || []).reduce((s, r) => s + r.amount, 0)
+
+    document.getElementById('todayTotal').innerText = todaySum.toFixed(2)
+    document.getElementById('monthTotal').innerText = monthSum.toFixed(2)
+  }
+
+  async function addExpense() {
+    const description = document.getElementById('expDesc').value.trim()
+    const amount      = parseFloat(document.getElementById('expAmount').value)
+    const category    = document.getElementById('expCategory').value
+    const date        = document.getElementById('expDate').value
+    const msg         = document.getElementById('expMsg')
+
+    if (!description || !amount || !date) {
+      msg.style.color = '#c0392b'
+      msg.innerText = '⚠️ يرجى تعبئة جميع الحقول'
+      return
+    }
+
+    const { res, data } = await fetchJson('/expenses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description, amount, category, date })
+    })
+
+    if (!res.ok) {
+      msg.style.color = '#c0392b'
+      msg.innerText = '❌ ' + (data.error || 'فشل الحفظ')
+      return
+    }
+
+    msg.style.color = '#27ae60'
+    msg.innerText = '✅ تم الحفظ'
+    document.getElementById('expDesc').value   = ''
+    document.getElementById('expAmount').value = ''
+    setTimeout(() => { msg.innerText = '' }, 3000)
+    await loadExpenses(1)
+    await loadTotals()
+  }
+
+  async function deleteExpense(id) {
+    if (!confirm('هل تريد حذف هذا المنصرف؟')) return
+    const { res, data } = await fetchJson(`/expenses/${id}`, { method: 'DELETE' })
+    if (!res.ok) { alert(data.error || 'فشل الحذف'); return }
+    await loadExpenses(currentPage)
+    await loadTotals()
+  }
+
+  function applyFilter() {
+    filterFrom = document.getElementById('filterFrom').value
+    filterTo   = document.getElementById('filterTo').value
+    loadExpenses(1)
+  }
+
+  function resetFilter() {
+    filterFrom = ''
+    filterTo   = ''
+    document.getElementById('filterFrom').value = ''
+    document.getElementById('filterTo').value   = ''
+    loadExpenses(1)
+  }
+
+  function exportExpensesExcel() {
+    const table = document.getElementById('expensesTable')
+    const headers = ['#', 'الوصف', 'الفئة', 'المبلغ (ر.ق)', 'التاريخ', 'المستخدم']
+    const wsData = [headers]
+    Array.from(table.rows).forEach(row => {
+      const cells = Array.from(row.cells)
+      const keep = currentUserRole === 'admin' ? cells.slice(0, 6) : cells
+      wsData.push(keep.map(c => c.innerText))
+    })
+    const ws = XLSX.utils.aoa_to_sheet(wsData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'المنصرفات')
+    XLSX.writeFile(wb, 'expenses.xlsx')
+  }
+
+  init()
+</script>
+</body>
+</html>
