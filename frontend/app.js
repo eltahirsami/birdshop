@@ -5,6 +5,7 @@ let userRole = null
 let editMode = false
 let editId = null
 let isCheckoutProcessing = false
+let discountPct = 0
 let salesHistoryPage = 1
 let salesHistorySearch = ''
 let salesHistoryFrom = ''
@@ -299,11 +300,11 @@ function sellProduct(id) {
 function renderCart() {
   const table = document.getElementById("cartTable")
   table.innerHTML = ""
-  let total = 0
+  let subtotal = 0
 
   cart.forEach((c, index) => {
     let sum = c.price * c.qty
-    total += sum
+    subtotal += sum
     table.innerHTML += `
       <tr>
         <td>${c.name}</td>
@@ -319,7 +320,32 @@ function renderCart() {
     `
   })
 
-  document.getElementById("total").innerText = total
+  const discountAmount = parseFloat((subtotal * discountPct / 100).toFixed(2))
+  const finalTotal = parseFloat((subtotal - discountAmount).toFixed(2))
+  document.getElementById("total").innerText = subtotal
+
+  const hasDiscount = discountPct > 0
+  document.getElementById("discountAmountLine").style.display = hasDiscount ? "block" : "none"
+  document.getElementById("finalTotalLine").style.display = hasDiscount ? "block" : "none"
+  if (hasDiscount) {
+    document.getElementById("discountAmount").innerText = discountAmount
+    document.getElementById("finalTotal").innerText = finalTotal
+  }
+}
+
+function applyDiscount() {
+  const input = document.getElementById("discountInput")
+  const err = document.getElementById("discountError")
+  let val = parseFloat(input.value) || 0
+  if (val > 10) {
+    err.style.display = "inline"
+    val = 10
+    input.value = 10
+  } else {
+    err.style.display = "none"
+  }
+  discountPct = val < 0 ? 0 : val
+  renderCart()
 }
 
 /* =========================
@@ -356,6 +382,8 @@ async function checkout() {
 
   isCheckoutProcessing = true
   const soldItems = [...cart]
+  const discountAtCheckout = discountPct
+
   const res = await fetch('/sales/checkout', {
     method: "POST",
     credentials: 'include',
@@ -373,6 +401,11 @@ async function checkout() {
   const invoiceNumber = data.invoice
 
   alert("تم البيع بنجاح")
+  discountPct = 0
+  const discountInputEl = document.getElementById("discountInput")
+  if (discountInputEl) discountInputEl.value = 0
+  const discountErrEl = document.getElementById("discountError")
+  if (discountErrEl) discountErrEl.style.display = "none"
   cart = []
   renderCart()
   loadProducts()
@@ -385,7 +418,7 @@ async function checkout() {
   if (invoiceNumber) {
     document.getElementById("invoiceNumber").innerText = invoiceNumber
     document.getElementById("invoiceDate").innerText = new Date().toLocaleString()
-    openInvoiceTwoCopies(invoiceNumber)
+    printInvoice(soldItems, invoiceNumber, discountAtCheckout)
   }
   isCheckoutProcessing = false
 }
@@ -780,7 +813,12 @@ async function checkLowStock() {
 /* =========================
 طباعة الفاتورة
 ========================= */
-function buildInvoiceHtml(invoiceNumber, date, rows, total) {
+function buildInvoiceHtml(invoiceNumber, date, rows, total, discountInfo) {
+  const totalHtml = discountInfo
+    ? `<p style="margin:2px 0;">المجموع الفرعي : ${total}</p>
+       <p style="margin:2px 0;">خصم ${discountInfo.pct}% : ${discountInfo.amount} ر.ق</p>
+       <h3>الإجمالي : ${discountInfo.finalTotal}</h3>`
+    : `<h3>الإجمالي : ${total}</h3>`
   return `
     <html dir="rtl"><head><title>فاتورة</title><style>${INVOICE_STYLE}</style></head>
     <body>
@@ -795,7 +833,7 @@ function buildInvoiceHtml(invoiceNumber, date, rows, total) {
         <p>رقم الفاتورة : ${invoiceNumber}</p>
         <p>التاريخ : ${date}</p>
         <table><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr>${rows}</table>
-        <h3>الإجمالي : ${total}</h3>
+        ${totalHtml}
         <div class="footer">
           ✨ شكراً لزيارتكم ✨
           <br>نتمنى لكم تجربة ممتعة
@@ -806,18 +844,24 @@ function buildInvoiceHtml(invoiceNumber, date, rows, total) {
   `
 }
 
-function printInvoice(items, invoiceNumber) {
+function printInvoice(items, invoiceNumber, discount) {
   if (!items || items.length === 0) { alert("لا يوجد منتجات للطباعة"); return }
-  let total = 0
+  let subtotal = 0
   const date = new Date().toLocaleString()
   let rows = ''
   items.forEach(c => {
     const sum = c.price * c.qty
-    total += sum
+    subtotal += sum
     rows += `<tr><td>${c.name}</td><td>${c.qty}</td><td>${c.price}</td><td>${sum}</td></tr>`
   })
+  const pct = discount || 0
+  const discountInfo = pct > 0 ? {
+    pct,
+    amount: parseFloat((subtotal * pct / 100).toFixed(2)),
+    finalTotal: parseFloat((subtotal - subtotal * pct / 100).toFixed(2))
+  } : null
   const win = window.open("", "", "width=320,height=600")
-  win.document.write(buildInvoiceHtml(invoiceNumber, date, rows, total))
+  win.document.write(buildInvoiceHtml(invoiceNumber, date, rows, subtotal, discountInfo))
   win.document.close()
   setTimeout(() => win.print(), 500)
 }

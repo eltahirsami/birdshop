@@ -346,6 +346,16 @@ style="margin-bottom:10px;width:200px;padding:5px;"
 <span id="total">0</span>
 </h3>
 
+<div id="discountSection" style="margin:8px 0;display:flex;align-items:center;gap:8px;">
+  <label>خصم (%):</label>
+  <input type="number" id="discountInput" min="0" max="10" value="0"
+    style="width:60px;padding:4px;border:1px solid #ccc;border-radius:4px;"
+    oninput="applyDiscount()">
+  <span id="discountError" style="color:#e74c3c;font-size:13px;display:none;">⚠️ الخصم لا يتجاوز 10%</span>
+</div>
+<p id="discountAmountLine" style="display:none;margin:4px 0;color:#c0392b;">خصم: <span id="discountAmount">0</span> ر.ق</p>
+<h3 id="finalTotalLine" style="display:none;">الإجمالي بعد الخصم: <span id="finalTotal">0</span></h3>
+
 <hr>
 <h3>🔍 البحث عن فاتورة</h3>
 <input 
@@ -366,7 +376,7 @@ onkeypress="if(event.key==='Enter'){searchInvoice()}"
 
 <button onclick="checkout()">✅ إتمام البيع</button>
 
-<button onclick="printInvoice(cart)">🖨️ طباعة الفاتورة</button>
+<button onclick="printInvoice(cart, null, discountPct)">🖨️ طباعة الفاتورة</button>
 
 <button onclick="printDailyReport()">🖨️ طباعة تقرير اليوم</button>
 
