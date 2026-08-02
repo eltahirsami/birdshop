@@ -212,6 +212,8 @@ async function getUser() {
     if (costPriceTh) costPriceTh.style.display = "none"
     const salesHistCostPriceTh = document.getElementById("salesHistCostPriceTh")
     if (salesHistCostPriceTh) salesHistCostPriceTh.style.display = "none"
+    const salesHistProfitTh = document.getElementById("salesHistProfitTh")
+    if (salesHistProfitTh) salesHistProfitTh.style.display = "none"
   }
 }
 
@@ -543,7 +545,7 @@ async function loadSalesHistory(page) {
         <td>${s.quantity}</td>
         ${userRole === "cashier" ? `<td style="display:none"></td>` : `<td>${s.cost_price ?? 0}</td>`}
         <td>${s.total}</td>
-        <td>${s.profit ?? 0}</td>
+        ${userRole === "cashier" ? `<td style="display:none"></td>` : `<td>${s.profit ?? 0}</td>`}
         <td>${new Date(s.created_at).toLocaleString('ar')}</td>
       </tr>
     `).join('')
