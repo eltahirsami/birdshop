@@ -208,6 +208,8 @@ async function getUser() {
     if (clearBtn) clearBtn.parentElement.style.display = "none"
     const deleteAllBtns = document.getElementById("deleteAllBtns")
     if (deleteAllBtns) deleteAllBtns.style.display = "none"
+    const costPriceTh = document.getElementById("costPriceTh")
+    if (costPriceTh) costPriceTh.style.display = "none"
   }
 }
 
@@ -239,11 +241,15 @@ function renderProducts(list) {
     let lowStock = ""
     if (p.stock <= 5) lowStock = "⚠️"
 
+    const costPriceCell = userRole === "cashier"
+      ? `<td style="display:none"></td>`
+      : `<td>${p.cost_price ?? 0}</td>`
+
     html += `
       <tr>
         <td>${p.name}</td>
         <td>${p.category}</td>
-        <td>${p.cost_price ?? 0}</td>
+        ${costPriceCell}
         <td>${p.price}</td>
         <td>${p.stock} ${lowStock}</td>
         <td>
