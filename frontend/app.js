@@ -215,6 +215,8 @@ async function getUser() {
     if (salesHistCostPriceTh) salesHistCostPriceTh.style.display = "none"
     const salesHistProfitTh = document.getElementById("salesHistProfitTh")
     if (salesHistProfitTh) salesHistProfitTh.style.display = "none"
+    const stats = document.getElementById("stats")
+    if (stats) stats.style.display = "none"
   }
 }
 
