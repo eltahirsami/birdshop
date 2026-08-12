@@ -219,8 +219,6 @@ async function getUser() {
     if (stats) stats.style.display = "none"
     const backupBtn = document.querySelector("button[onclick='manualBackup()']")
     if (backupBtn) backupBtn.parentElement.style.display = "none"
-    const suppliersBtn = document.querySelector("button[onclick*='supplier']")
-    if (suppliersBtn) suppliersBtn.style.display = "none"
   }
 }
 
