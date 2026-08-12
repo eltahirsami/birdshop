@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>العملاء</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .panel { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.04); margin-bottom: 16px; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom: 10px; }
+    .row input { padding: 8px; border: 1px solid #ddd; border-radius: 8px; font-family: tahoma; }
+    .row button { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; font-family: tahoma; }
+    .btnGreen { background:#27ae60; color:#fff; }
+    .btnBlue { background:#2980b9; color:#fff; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { border: 1px solid #eee; padding: 8px 10px; font-size: 13px; text-align:center; }
+    th { background:#f3f4f7; font-weight: bold; }
+    tr:hover td { background: #fafbff; }
+    .msg { margin-top: 8px; font-weight: bold; color: #27ae60; }
+    h2 { margin: 0 0 12px; }
+  </style>
+</head>
+<script src="xlsx.full.min.js"></script>
+<body>
+<div class="wrap">
+  <h2>👥 إدارة العملاء</h2>
+
+  <div class="panel">
+    <h3 style="margin:0 0 10px;">➕ إضافة عميل جديد</h3>
+    <div class="row">
+      <input type="text" id="newName" placeholder="اسم العميل" style="width:180px;">
+      <input type="text" id="newPhone" placeholder="رقم الهاتف" style="width:150px;">
+      <button class="btnGreen" onclick="addCustomer()">💾 حفظ</button>
+    </div>
+    <div id="addMsg" class="msg"></div>
+  </div>
+
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+      <h3 style="margin:0;">📋 قائمة العملاء</h3>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="searchInput" placeholder="🔍 بحث..." style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-family:tahoma;width:180px;" oninput="filterTable()">
+        <button class="btnBlue" onclick="exportExcel()">📊 تصدير Excel</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>الاسم</th>
+          <th>الهاتف</th>
+          <th>عدد الفواتير</th>
+          <th>إجمالي المشتريات (ر.ق)</th>
+          <th>تاريخ التسجيل</th>
+        </tr>
+      </thead>
+      <tbody id="customersTable">
+        <tr><td colspan="6" style="text-align:center;color:#999;">جاري التحميل...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+let allCustomers = []
+
+async function loadCustomers() {
+  try {
+    const res = await fetch('/customers', { credentials: 'include' })
+    if (!res.ok) { document.getElementById("customersTable").innerHTML = '<tr><td colspan="6" style="text-align:center;color:#c00;">فشل التحميل</td></tr>'; return; }
+    allCustomers = await res.json()
+    renderTable(allCustomers)
+  } catch(e) {
+    document.getElementById("customersTable").innerHTML = '<tr><td colspan="6" style="text-align:center;color:#c00;">خطأ في الاتصال</td></tr>'
+  }
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById("customersTable")
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">لا يوجد عملاء</td></tr>'
+    return
+  }
+  tbody.innerHTML = rows.map((c, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${c.name}</td>
+      <td>${c.phone || '-'}</td>
+      <td>${c.total_invoices || 0}</td>
+      <td>${(c.total_amount || 0).toFixed(2)}</td>
+      <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('ar') : '-'}</td>
+    </tr>
+  `).join('')
+}
+
+function filterTable() {
+  const q = document.getElementById("searchInput").value.trim().toLowerCase()
+  if (!q) { renderTable(allCustomers); return }
+  renderTable(allCustomers.filter(c =>
+    c.name.toLowerCase().includes(q) || (c.phone || '').includes(q)
+  ))
+}
+
+async function addCustomer() {
+  const name = document.getElementById("newName").value.trim()
+  const phone = document.getElementById("newPhone").value.trim()
+  const msgEl = document.getElementById("addMsg")
+  if (!name) { msgEl.style.color = '#c00'; msgEl.innerText = 'الاسم مطلوب'; return }
+  try {
+    const res = await fetch('/customers', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone: phone || undefined })
+    })
+    const data = await res.json()
+    if (!res.ok) { msgEl.style.color = '#c00'; msgEl.innerText = data.error || 'فشل الإضافة'; return }
+    msgEl.style.color = '#27ae60'
+    msgEl.innerText = 'تمت الإضافة بنجاح'
+    document.getElementById("newName").value = ''
+    document.getElementById("newPhone").value = ''
+    loadCustomers()
+    setTimeout(() => { msgEl.innerText = '' }, 3000)
+  } catch(e) {
+    msgEl.style.color = '#c00'; msgEl.innerText = 'خطأ في الاتصال'
+  }
+}
+
+function exportExcel() {
+  const rows = allCustomers.map((c, i) => ({
+    '#': i + 1,
+    'الاسم': c.name,
+    'الهاتف': c.phone || '',
+    'عدد الفواتير': c.total_invoices || 0,
+    'إجمالي المشتريات': (c.total_amount || 0).toFixed(2),
+    'تاريخ التسجيل': c.created_at ? new Date(c.created_at).toLocaleDateString('ar') : ''
+  }))
+  const ws = XLSX.utils.json_to_sheet(rows)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'العملاء')
+  XLSX.writeFile(wb, 'customers.xlsx')
+}
+
+loadCustomers()
+</script>
+</body>
+</html>

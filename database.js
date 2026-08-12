@@ -168,6 +168,23 @@ db.serialize(() => {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS customers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      phone TEXT UNIQUE,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.all("PRAGMA table_info(sales)", [], (err, columns) => {
+    if (err || !Array.isArray(columns)) return;
+    const colNames = new Set(columns.map((c) => c.name));
+    if (!colNames.has('customer_id')) {
+      db.run("ALTER TABLE sales ADD COLUMN customer_id INTEGER");
+    }
+  });
 });
 
 module.exports = db;

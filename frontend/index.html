@@ -128,6 +128,17 @@ overflow:hidden;">
     margin-right:10px;">
     💸 المنصرفات
   </button>
+  <button onclick="openCustomersWindow()" style="
+    background:#e67e22;
+    color:#fff;
+    border:none;
+    padding:8px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+    margin-right:10px;">
+    👥 العملاء
+  </button>
   <span id="backupMsg" style="margin-right:10px;font-size:13px;color:#27ae60;"></span>
 </div>
 
@@ -227,6 +238,7 @@ style="margin-bottom:10px;width:200px;padding:5px;"
 <th id="salesHistCostPriceTh">سعر الشراء</th>
 <th>سعر البيع</th>
 <th id="salesHistProfitTh">الربح</th>
+<th>العميل</th>
 <th>التاريخ</th>
 
 </tr>
@@ -305,6 +317,7 @@ style="margin-bottom:10px;width:200px;padding:5px;"
 <th>رقم الفاتورة</th>
 <th>التاريخ</th>
 <th>الإجمالي</th>
+<th>العميل</th>
 <th>طباعة</th>
 </tr>
 </thead>
@@ -382,6 +395,17 @@ onkeypress="if(event.key==='Enter'){searchInvoice()}"
 
 <p>🧾 رقم الفاتورة: <span id="invoiceNumber">-</span></p>
 <p>📅 تاريخ الفاتورة: <span id="invoiceDate">-</span></p>
+
+<div id="customerSection" style="margin:10px 0;padding:10px;background:#f8f9fa;border-radius:6px;border:1px solid #e0e0e0;">
+  <strong style="font-size:14px;">👤 بيانات العميل (اختياري)</strong>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;position:relative;">
+    <input type="text" id="customerPhone" placeholder="📱 رقم الهاتف" oninput="searchCustomerByPhone()"
+      style="padding:6px;border:1px solid #ccc;border-radius:4px;width:150px;font-family:tahoma;">
+    <input type="text" id="customerName" placeholder="👤 اسم العميل"
+      style="padding:6px;border:1px solid #ccc;border-radius:4px;width:150px;font-family:tahoma;">
+    <div id="customerSuggestions" style="position:absolute;top:100%;right:0;background:#fff;border:1px solid #ccc;border-radius:4px;width:230px;z-index:100;display:none;max-height:150px;overflow-y:auto;box-shadow:0 2px 8px rgba(0,0,0,.15);"></div>
+  </div>
+</div>
 
 <div style="margin-top:10px">
 

@@ -390,12 +390,17 @@ async function checkout() {
   const soldItems = [...cart]
   const discountAtCheckout = discountPct
 
+  const customerPhoneVal = (document.getElementById("customerPhone")?.value || '').trim()
+  const customerNameVal = (document.getElementById("customerName")?.value || '').trim()
+
   const res = await fetch('/sales/checkout', {
     method: "POST",
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      items: cart.map((item) => ({ product_id: item.id, quantity: item.qty }))
+      items: cart.map((item) => ({ product_id: item.id, quantity: item.qty })),
+      customer_name: customerNameVal || undefined,
+      customer_phone: customerPhoneVal || undefined
     })
   })
   const data = await res.json()
@@ -412,6 +417,12 @@ async function checkout() {
   if (discountInputEl) discountInputEl.value = 0
   const discountErrEl = document.getElementById("discountError")
   if (discountErrEl) discountErrEl.style.display = "none"
+  const custPhoneEl = document.getElementById("customerPhone")
+  if (custPhoneEl) custPhoneEl.value = ""
+  const custNameEl = document.getElementById("customerName")
+  if (custNameEl) custNameEl.value = ""
+  const custSuggestEl = document.getElementById("customerSuggestions")
+  if (custSuggestEl) custSuggestEl.style.display = "none"
   cart = []
   renderCart()
   loadProducts()
@@ -577,7 +588,7 @@ async function loadSalesHistory(page) {
   const cashierTable = document.getElementById("cashierSalesTable")
 
   const adminRows = () => {
-    if (!rows.length) return `<tr><td colspan="6" style="text-align:center">لا توجد مبيعات</td></tr>`
+    if (!rows.length) return `<tr><td colspan="7" style="text-align:center">لا توجد مبيعات</td></tr>`
     return rows.map(s => `
       <tr>
         <td>${s.product}</td>
@@ -585,18 +596,20 @@ async function loadSalesHistory(page) {
         ${userRole === "cashier" ? `<td style="display:none"></td>` : `<td>${s.cost_price ?? 0}</td>`}
         <td>${s.total}</td>
         ${userRole === "cashier" ? `<td style="display:none"></td>` : `<td>${s.profit ?? 0}</td>`}
+        <td>${s.customer_name || '-'}</td>
         <td>${new Date(s.created_at).toLocaleString('ar')}</td>
       </tr>
     `).join('')
   }
 
   const cashierRows = () => {
-    if (!rows.length) return `<tr><td colspan="4" style="text-align:center">لا توجد مبيعات</td></tr>`
+    if (!rows.length) return `<tr><td colspan="5" style="text-align:center">لا توجد مبيعات</td></tr>`
     return rows.map(s => `
       <tr>
         <td>${s.product}</td>
         <td>${s.quantity}</td>
         <td>${s.total}</td>
+        <td>${s.customer_name || '-'}</td>
         <td>${new Date(s.created_at).toLocaleString('ar')}</td>
       </tr>
     `).join('')
@@ -684,12 +697,13 @@ async function loadInvoices(page) {
   const cashierTable = document.getElementById("cashierInvoiceTable")
 
   const buildRows = () => {
-    if (!rows.length) return `<tr><td colspan="4" style="text-align:center">لا توجد فواتير</td></tr>`
+    if (!rows.length) return `<tr><td colspan="5" style="text-align:center">لا توجد فواتير</td></tr>`
     return rows.map(inv => `
       <tr>
         <td>${inv.invoice_number}</td>
         <td>${new Date(inv.created_at).toLocaleString('ar')}</td>
         <td>${inv.total}</td>
+        <td>${inv.customer_name || '-'}</td>
         <td>
           <button onclick="openInvoice(${inv.invoice_number})">🖨️ طباعة</button>
           <button onclick="openInvoiceWindow(${inv.invoice_number})">👁️ عرض</button>
@@ -1038,6 +1052,44 @@ function openSuppliersWindow() {
 
 function openExpensesWindow() {
   window.open("/expenses.html", "", "width=1000,height=700")
+}
+
+function openCustomersWindow() {
+  window.open("/customers.html", "", "width=1000,height=700")
+}
+
+let customerSearchTimer = null
+async function searchCustomerByPhone() {
+  const phoneEl = document.getElementById("customerPhone")
+  const nameEl = document.getElementById("customerName")
+  const suggestionsEl = document.getElementById("customerSuggestions")
+  if (!phoneEl || !suggestionsEl) return
+  const q = phoneEl.value.trim()
+  if (!q) { suggestionsEl.style.display = "none"; return }
+  clearTimeout(customerSearchTimer)
+  customerSearchTimer = setTimeout(async () => {
+    try {
+      const res = await fetch('/customers?q=' + encodeURIComponent(q), { credentials: 'include' })
+      const rows = await res.json()
+      if (!rows.length) { suggestionsEl.style.display = "none"; return }
+      suggestionsEl.innerHTML = rows.map(c => `
+        <div style="padding:8px 10px;cursor:pointer;border-bottom:1px solid #eee;font-size:13px;"
+          onmousedown="selectCustomer('${c.phone || ''}','${c.name}')">
+          ${c.name}${c.phone ? ' — ' + c.phone : ''}
+        </div>
+      `).join('')
+      suggestionsEl.style.display = "block"
+    } catch(e) { suggestionsEl.style.display = "none" }
+  }, 250)
+}
+
+function selectCustomer(phone, name) {
+  const phoneEl = document.getElementById("customerPhone")
+  const nameEl = document.getElementById("customerName")
+  const suggestionsEl = document.getElementById("customerSuggestions")
+  if (phoneEl) phoneEl.value = phone
+  if (nameEl) nameEl.value = name
+  if (suggestionsEl) suggestionsEl.style.display = "none"
 }
 
 

@@ -251,7 +251,7 @@ app.post('/sales', requireLogin, requireCashier, (req, res) => {
 });
 
 app.post('/sales/checkout', requireLogin, requireCashier, (req, res) => {
-  const items = req.body.items;
+  const { items, customer_name, customer_phone } = req.body;
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'سلة فارغة' });
   }
@@ -266,75 +266,95 @@ app.post('/sales/checkout', requireLogin, requireCashier, (req, res) => {
   }
   const productIds = Object.keys(merged).map((k) => parseInt(k, 10));
   const placeholders = productIds.map(() => '?').join(',');
-  db.all(
-    `SELECT id, price, stock, name FROM products WHERE id IN (${placeholders})`,
-    productIds,
-    (err, products) => {
-      if (err) return res.status(500).json({ error: 'Database error' });
-      if (!products || products.length !== productIds.length) {
-        return res.status(404).json({ error: 'منتج غير موجود' });
-      }
-      const byId = {};
-      products.forEach((p) => { byId[p.id] = p; });
-      for (const pid of productIds) {
-        const need = merged[pid];
-        if (byId[pid].stock < need) {
-          return res.status(400).json({ error: 'المخزون غير كافٍ: ' + byId[pid].name });
+
+  function doCheckout(customerId) {
+    db.all(
+      `SELECT id, price, stock, name FROM products WHERE id IN (${placeholders})`,
+      productIds,
+      (err, products) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (!products || products.length !== productIds.length) {
+          return res.status(404).json({ error: 'منتج غير موجود' });
         }
-      }
-
-      db.get("SELECT MAX(invoice_number) as last FROM sales", [], (err2, row) => {
-        if (err2) return res.status(500).json({ error: 'Database error' });
-        const invoiceNumber = (row?.last || 0) + 1;
-        const userId = req.session.user.id;
-        const uname = req.session.user.username;
-
-        db.run('BEGIN IMMEDIATE TRANSACTION', (beginErr) => {
-          if (beginErr) return res.status(500).json({ error: 'فشل بدء المعاملة' });
-
-          function step(i) {
-            if (i >= productIds.length) {
-              db.run('COMMIT', (commitErr) => {
-                if (commitErr) {
-                  return res.status(500).json({ error: 'فشل تأكيد البيع' });
-                }
-                const summary = productIds
-                  .map((pid) => `${byId[pid].name} ×${merged[pid]}`)
-                  .join('، ');
-                logAction(userId, uname, 'بيع', `فاتورة ${invoiceNumber}: ${summary}`);
-                res.json({ message: 'تم البيع بنجاح', invoice: invoiceNumber });
-              });
-              return;
-            }
-            const pid = productIds[i];
-            const qty = merged[pid];
-            const p = byId[pid];
-            const total = p.price * qty;
-            db.run(
-              'INSERT INTO sales (product_id,quantity,total,invoice_number,user_id) VALUES (?,?,?,?,?)',
-              [pid, qty, total, invoiceNumber, userId],
-              function (insertErr) {
-                if (insertErr) {
-                  return db.run('ROLLBACK', () => res.status(500).json({ error: 'فشل البيع' }));
-                }
-                db.run(
-                  'UPDATE products SET stock = stock - ? WHERE id=?',
-                  [qty, pid],
-                  function (updErr) {
-                    if (updErr) {
-                      return db.run('ROLLBACK', () => res.status(500).json({ error: 'فشل تحديث المخزون' }));
-                    }
-                    step(i + 1);
-                  }
-                );
-              }
-            );
+        const byId = {};
+        products.forEach((p) => { byId[p.id] = p; });
+        for (const pid of productIds) {
+          const need = merged[pid];
+          if (byId[pid].stock < need) {
+            return res.status(400).json({ error: 'المخزون غير كافٍ: ' + byId[pid].name });
           }
-          step(0);
+        }
+
+        db.get("SELECT MAX(invoice_number) as last FROM sales", [], (err2, row) => {
+          if (err2) return res.status(500).json({ error: 'Database error' });
+          const invoiceNumber = (row?.last || 0) + 1;
+          const userId = req.session.user.id;
+          const uname = req.session.user.username;
+
+          db.run('BEGIN IMMEDIATE TRANSACTION', (beginErr) => {
+            if (beginErr) return res.status(500).json({ error: 'فشل بدء المعاملة' });
+
+            function step(i) {
+              if (i >= productIds.length) {
+                db.run('COMMIT', (commitErr) => {
+                  if (commitErr) {
+                    return res.status(500).json({ error: 'فشل تأكيد البيع' });
+                  }
+                  const summary = productIds
+                    .map((pid) => `${byId[pid].name} ×${merged[pid]}`)
+                    .join('، ');
+                  logAction(userId, uname, 'بيع', `فاتورة ${invoiceNumber}: ${summary}`);
+                  res.json({ message: 'تم البيع بنجاح', invoice: invoiceNumber });
+                });
+                return;
+              }
+              const pid = productIds[i];
+              const qty = merged[pid];
+              const p = byId[pid];
+              const total = p.price * qty;
+              db.run(
+                'INSERT INTO sales (product_id,quantity,total,invoice_number,user_id,customer_id) VALUES (?,?,?,?,?,?)',
+                [pid, qty, total, invoiceNumber, userId, customerId || null],
+                function (insertErr) {
+                  if (insertErr) {
+                    return db.run('ROLLBACK', () => res.status(500).json({ error: 'فشل البيع' }));
+                  }
+                  db.run(
+                    'UPDATE products SET stock = stock - ? WHERE id=?',
+                    [qty, pid],
+                    function (updErr) {
+                      if (updErr) {
+                        return db.run('ROLLBACK', () => res.status(500).json({ error: 'فشل تحديث المخزون' }));
+                      }
+                      step(i + 1);
+                    }
+                  );
+                }
+              );
+            }
+            step(0);
+          });
         });
+      }
+    );
+  }
+
+  const cName = (customer_name || '').trim();
+  const cPhone = (customer_phone || '').trim();
+  if (cPhone) {
+    db.get("SELECT id FROM customers WHERE phone=?", [cPhone], (err, row) => {
+      if (row) return doCheckout(row.id);
+      db.run("INSERT INTO customers (name, phone) VALUES (?,?)", [cName || cPhone, cPhone], function(err2) {
+        doCheckout(err2 ? null : this.lastID);
       });
-    }
-  );
+    });
+  } else if (cName) {
+    db.run("INSERT INTO customers (name, phone) VALUES (?,?)", [cName, null], function(err) {
+      doCheckout(err ? null : this.lastID);
+    });
+  } else {
+    doCheckout(null);
+  }
 });
 
 /* =========================
@@ -370,8 +390,10 @@ app.get('/sales/history', requireLogin, requireCashier, (req, res) => {
   const countSql = `SELECT COUNT(*) as total FROM sales s JOIN products p ON p.id=s.product_id ${where}`;
   const rowsSql = `
     SELECT s.invoice_number, p.name product, s.quantity, s.total,
-    p.cost_price, (s.total-(p.cost_price*s.quantity)) as profit, s.created_at
+    p.cost_price, (s.total-(p.cost_price*s.quantity)) as profit, s.created_at,
+    c.name as customer_name
     FROM sales s JOIN products p ON p.id=s.product_id
+    LEFT JOIN customers c ON c.id = s.customer_id
     ${where}
     ORDER BY s.created_at DESC LIMIT ? OFFSET ?
   `;
@@ -426,13 +448,13 @@ app.get('/sales/invoices', requireLogin, requireCashier, (req, res) => {
 
   const conds = [];
   const baseParams = [];
-  if (q) { conds.push("CAST(invoice_number AS TEXT) LIKE ?"); baseParams.push('%' + q + '%'); }
-  if (from) { conds.push("date(created_at) >= ?"); baseParams.push(from); }
-  if (to) { conds.push("date(created_at) <= ?"); baseParams.push(to); }
+  if (q) { conds.push("CAST(s.invoice_number AS TEXT) LIKE ?"); baseParams.push('%' + q + '%'); }
+  if (from) { conds.push("date(s.created_at) >= ?"); baseParams.push(from); }
+  if (to) { conds.push("date(s.created_at) <= ?"); baseParams.push(to); }
   const where = conds.length ? 'WHERE ' + conds.join(' AND ') : '';
 
-  const countSql = `SELECT COUNT(DISTINCT invoice_number) as total FROM sales ${where}`;
-  const rowsSql = `SELECT invoice_number, SUM(total) as total, MAX(created_at) as created_at FROM sales ${where} GROUP BY invoice_number ORDER BY invoice_number DESC LIMIT ? OFFSET ?`;
+  const countSql = `SELECT COUNT(DISTINCT s.invoice_number) as total FROM sales s LEFT JOIN customers c ON c.id = s.customer_id ${where}`;
+  const rowsSql = `SELECT s.invoice_number, SUM(s.total) as total, MAX(s.created_at) as created_at, c.name as customer_name FROM sales s LEFT JOIN customers c ON c.id = s.customer_id ${where} GROUP BY s.invoice_number ORDER BY s.invoice_number DESC LIMIT ? OFFSET ?`;
 
   db.get(countSql, baseParams, (err, countRow) => {
     if (err) { res.status(500).json({ error: 'db error' }); return; }
@@ -972,6 +994,60 @@ app.delete('/logs/all', (req, res) => {
     logAction(req.session.user.id, req.session.user.username, 'مسح سجلات', 'ALL');
     res.json({ message: 'تم مسح السجلات بنجاح' });
   });
+});
+
+/* =========================
+   العملاء
+========================= */
+app.get('/customers', requireLogin, requireCashier, (req, res) => {
+  const q = (req.query.q || '').trim();
+  if (q) {
+    db.all(
+      "SELECT id, name, phone FROM customers WHERE name LIKE ? OR phone LIKE ? ORDER BY name LIMIT 10",
+      ['%' + q + '%', '%' + q + '%'],
+      (err, rows) => {
+        if (err) return res.status(500).json({ error: 'db error' });
+        res.json(rows);
+      }
+    );
+  } else {
+    db.all(
+      `SELECT c.id, c.name, c.phone, c.created_at,
+        COUNT(DISTINCT s.invoice_number) as total_invoices,
+        IFNULL(SUM(s.total), 0) as total_amount
+       FROM customers c
+       LEFT JOIN sales s ON s.customer_id = c.id
+       GROUP BY c.id ORDER BY c.name`,
+      [],
+      (err, rows) => {
+        if (err) return res.status(500).json({ error: 'db error' });
+        res.json(rows);
+      }
+    );
+  }
+});
+
+app.post('/customers', requireLogin, requireCashier, (req, res) => {
+  const { name, phone } = req.body;
+  if (!name) return res.status(400).json({ error: 'الاسم مطلوب' });
+  db.run(
+    "INSERT INTO customers (name, phone) VALUES (?, ?)",
+    [name.trim(), phone ? phone.trim() : null],
+    function(err) {
+      if (err) {
+        if (err.message && err.message.includes('UNIQUE')) {
+          db.get("SELECT id, name, phone FROM customers WHERE phone=?", [phone.trim()], (err2, row) => {
+            if (err2 || !row) return res.status(500).json({ error: 'db error' });
+            res.json(row);
+          });
+        } else {
+          return res.status(500).json({ error: 'فشل إضافة العميل' });
+        }
+      } else {
+        res.json({ id: this.lastID, name: name.trim(), phone: phone ? phone.trim() : null });
+      }
+    }
+  );
 });
 
 app.get('/settings', requireLogin, (req, res) => {
